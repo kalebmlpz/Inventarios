@@ -80,14 +80,10 @@ $showForm = $admin && ($editing || basename($_SERVER['SCRIPT_NAME']) === 'alta.p
 </g></svg>
 <h2><?= $editing ? 'Un detalle hace la diferencia.' : 'Un nuevo detalle para tu florería.' ?></h2>
 <p>Organiza cada flor y cada material desde su primera entrada al catálogo.</p>
-<nav class="section-nav" aria-label="Secciones del formulario">
-<a href="#identidad">Identidad del producto</a>
-<a href="#existencias">Existencias y precio</a>
-<a href="#detalles">Detalles adicionales</a>
-</nav>
+
 </aside>
 <form method="post" class="product-form">
-<div class="form-heading"><span class="eyebrow"><?= $editing ? 'ACTUALIZAR FICHA' : 'AMPLÍA TU CATÁLOGO' ?></span><h2><?= $editing ? 'Editar producto' : 'Nuevo producto' ?></h2><p>Completa la ficha para tener tus existencias a la vista.</p></div>
+<div class="form-heading"><h2><?= $editing ? 'Editar producto' : 'Nuevo producto' ?></h2></div>
 <input type="hidden" name="csrf" value="<?= esc($_SESSION['csrf']) ?>"><input type="hidden" name="id" value="<?= esc($editing['id_articulo'] ?? 0) ?>">
 <?php
 function catalogInput($key, $label, $type, $min, $editing, $placeholder = '') {
@@ -98,19 +94,22 @@ function catalogInput($key, $label, $type, $min, $editing, $placeholder = '') {
 function catalogSelect($key, $label, $options, $editing) { ?>
 <div class="field"><label for="<?= $key ?>"><?= $label ?></label><select id="<?= $key ?>" name="<?= $key ?>"><?php foreach ($options as $option): ?><option <?= ($editing[$key] ?? '') === $option ? 'selected' : '' ?>><?= esc($option) ?></option><?php endforeach; ?></select></div>
 <?php } ?>
-<fieldset id="identidad"><legend>Identidad del producto</legend><div class="form-grid">
+<fieldset id="identidad"><legend>Datos del producto</legend><div class="form-grid">
 <?php catalogInput('nombre','Nombre del producto','text',null,$editing,'Ej. Rosa roja Freedom'); catalogInput('sku','Código numérico','number',1,$editing,'Ej. 1001'); catalogSelect('categoria','Categoría',$categorias,$editing); catalogSelect('unidad','Unidad de medida',$unidades,$editing); ?>
 </div></fieldset>
 <fieldset id="existencias"><legend>Existencias y precio</legend><div class="form-grid stock-grid">
 <?php catalogInput('stock','Disponibles','number',0,$editing); catalogInput('stock_minimo','Stock mínimo','number',0,$editing); catalogInput('precio','Precio por unidad','number',0,$editing); ?>
 </div><p class="field-note">Las existencias se cuentan en la unidad que elegiste.</p></fieldset>
-<fieldset id="detalles"><legend>Detalles adicionales</legend>
+<fieldset id="detalles"><legend>Información adicional</legend>
+<div id="arreglo-options">
 <?php catalogSelect('modalidad','Modalidad del arreglo',$modalidades,$editing); ?>
-<p class="field-note">Solo para arreglos: preparados, por encargo o ambas formas.</p>
+<p class="field-note">Elige si estará listo para vender o se preparará por encargo.</p>
+</div>
 <div class="field"><label for="observaciones">Observaciones <span class="optional">/ opcional</span></label><textarea id="observaciones" name="observaciones" maxlength="500" rows="2" placeholder="Color, tamaño, cuidados o algún detalle especial…"><?= esc($editing['observaciones'] ?? '') ?></textarea></div>
 </fieldset>
 <div class="form-actions"><a class="back-link" href="consulta.php">Cancelar</a><button>Guardar producto</button></div>
 </form></section>
+<script src="./js/catalogo.js?v=<?= filemtime(__DIR__ . '/js/catalogo.js') ?>" defer></script>
 <?php endif; ?>
 <?php if (!$showForm): ?>
 <section class="user-card catalog-list"><div class="list-heading"><div><span class="eyebrow">A LA VISTA</span><h2>Tu catálogo</h2></div><?php if ($admin): ?><a class="action" href="alta.php">+ Nuevo producto</a><?php endif; ?></div><form class="search" method="get"><label for="q">Buscar producto</label><div><input id="q" name="q" value="<?= esc($q) ?>" placeholder="Nombre o código"><button>Buscar</button></div></form>

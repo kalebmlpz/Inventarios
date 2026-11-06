@@ -18,26 +18,23 @@
 .botanical { display: block; width: 170px; height: 195px; margin: 32px auto; color: #756b53; }
 .editor-aside h2 { font-family: Georgia, serif; font-size: 28px; font-weight: 400; line-height: 1.2; letter-spacing: -.6px; margin-bottom: 16px; }
 .editor-aside p { color: #716b5e; font-size: 13px; line-height: 1.8; }
-.section-nav { margin-top: 32px; }
-.section-nav a { display: flex; align-items: center; gap: 10px; padding: 17px 0; color: #4c473c; text-decoration: none; font-size: 12px; }
-.section-nav a:hover { color: #111; }
 .product-form { padding: 34px 40px; }
-.form-heading { margin-bottom: 30px; }
+.form-heading { margin-bottom: 28px; }
 .form-heading h2 { font-family: Georgia, serif; font-weight: 400; font-size: 29px; letter-spacing: -.8px; margin: 7px 0; }
 .form-heading p { color: #817a6f; font-size: 13px; margin: 0; }
-fieldset { border: 0; padding: 20px 0 24px; margin: 0; min-width: 0; scroll-margin-top: 20px; }
-legend { float: left; width: 100%; margin-bottom: 20px; font-size: 14px; font-weight: 650; }
-.form-grid { display: grid; clear: both; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+fieldset { border: 0; padding: 0; margin: 0 0 30px; min-width: 0; scroll-margin-top: 20px; }
+legend { float: none; padding: 0; width: 100%; margin-bottom: 16px; font-size: 14px; font-weight: 650; }
+.form-grid { display: grid; clear: both; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 18px; }
 .stock-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .field { margin: 0; clear: both; }
-label { font-size: 12px; font-weight: 600; color: #4b463c; }
+label { font-size: 13px; font-weight: 600; color: #4b463c; }
 input, select, textarea { background: #fffefa; color: #292823; border: 1px solid #dcd6c9; border-radius: 6px; min-height: 44px; font-size: 13px; }
 input::placeholder, textarea::placeholder { color: #a09a8c; }
 input:focus, select:focus, textarea:focus { border-color: #595246; outline: 3px solid #b1a38a25; }
 textarea { width: 100%; padding: 12px; font: inherit; font-size: 13px; resize: vertical; }
 .field-note { clear: both; font-size: 11px; color: #817a6b; margin: 10px 0 16px; line-height: 1.6; }
 .optional { font-size: 11px; color: #958d7e; font-weight: 400; }
-.form-actions { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding-top: 22px; }
+.form-actions { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding-top: 0; }
 .form-actions button { width: auto; border-radius: 6px; justify-content: center; }
 .form-actions a { margin: 0; font-size: 12px; }
 button { background: #1a1a1a; }
@@ -68,3 +65,5 @@ tbody tr:hover { background: #faf8f2; }
 .row-actions form { margin: 0; }
 .delete-product { width: auto; min-height: 0; padding: 8px 12px; border: 1px solid #dcd6c9; background: transparent; color: #1a1a1a; font-size: 13px; line-height: normal; border-radius: 6px; }
 .delete-product:hover { background: #e6e1d7; }
+
+#arreglo-options[hidden] { display: none; }
