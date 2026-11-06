@@ -1,6 +1,7 @@
 document.getElementById('formulario-articulos')
     .addEventListener('submit', function(e){
 
+    if (guardandoPedido) { e.preventDefault(); return }
     const sku = document.getElementById('sku').value
     const cantidad = document.getElementById('cantidad').value
     const finalizar = document.getElementById('finalizar')
@@ -39,8 +40,8 @@ document.getElementById('formulario-articulos')
             
             let elementExists = false;
 
-            for (let i = 1; i < card.childNodes.length; i++) {
-                if (card.childNodes[i].getAttribute('sku') === sku) {
+            for (let i = 0; i < card.children.length; i++) {
+                if (card.children[i].getAttribute('sku') === sku) {
                     elementExists = true;
                     break;
                 }
@@ -52,7 +53,7 @@ document.getElementById('formulario-articulos')
                 card.appendChild(div);
             }
 
-            if (card.childNodes.length > 1) {
+            if (card.children.length > 0) {
                 finalizar.classList.add('btn-success')
                 finalizar.classList.remove('btn-dark')
                 finalizar.classList.remove('disabled')
@@ -82,7 +83,8 @@ document.getElementById('articulos').addEventListener('click', function(e)
     const card = document.getElementById('articulos')
     const finalizar = document.getElementById('finalizar')
 
-    elemento = e.target
+    if (guardandoPedido) return
+    const elemento = e.target
 
     if(elemento.name === 'eliminar'){
         if(confirm('¿Está seguro que desea eliminar el atrículo?')){
@@ -90,7 +92,7 @@ document.getElementById('articulos').addEventListener('click', function(e)
         }
     }
 
-    if (card.childNodes.length > 1) {
+    if (card.children.length > 0) {
         finalizar.classList.add('btn-success')
         finalizar.classList.remove('btn-dark')
         finalizar.classList.remove('disabled')
@@ -103,34 +105,38 @@ document.getElementById('articulos').addEventListener('click', function(e)
 })
 
 
-document.getElementById('finalizar').addEventListener('click', function(e) 
-{
+let guardandoPedido = false
+
+document.getElementById('finalizar').addEventListener('click', async function(e) {
+    e.preventDefault()
+    if (guardandoPedido) return
     const card = document.getElementById('articulos')
-    
-    for (let i = 1; i < card.childNodes.length; i++) {
-        // console.log(card.childNodes[i])
-
-        const datos = new FormData();
-        datos.append('sku', card.childNodes[i].getAttribute('sku'))
-        datos.append('cantidad', card.childNodes[i].getAttribute('cantidad'))
-        datos.append('fecha', card.childNodes[i].getAttribute('fecha'))
-
-        fetch('../backend/venta.php', {
-            method: 'POST',
-            body: datos
-        })
-            .then(response => {
-                console.log(response)
-
-                card.innerHTML = ``
-                document.getElementById('formulario-articulos').reset()
-                finalizar.classList.remove('btn-success')
-                finalizar.classList.add('btn-dark')
-                finalizar.classList.add('disabled')
-                alert('Pedido realizado exitosamente')
-            })
-            .catch(error => {
-                console.log(error)
-            })  
+    const articulos = Array.from(card.children)
+    if (articulos.length === 0) return
+    guardandoPedido = true
+    this.classList.add('disabled')
+    try {
+        for (const articulo of articulos) {
+            const datos = new FormData()
+            datos.append('sku', articulo.getAttribute('sku'))
+            datos.append('cantidad', articulo.getAttribute('cantidad'))
+            datos.append('fecha', articulo.getAttribute('fecha'))
+            const response = await fetch('../backend/venta.php', { method: 'POST', body: datos })
+            const result = await response.json()
+            if (!response.ok || result.message !== 'OK') {
+                throw new Error(result.message || 'No se pudo guardar la venta')
+            }
+            articulo.remove()
+        }
+        document.getElementById('formulario-articulos').reset()
+        alert('Pedido registrado exitosamente. Puedes consultarlo en Registros por la fecha de venta.')
+    } catch (error) {
+        alert('No se completó el pedido. Los artículos pendientes permanecen en la lista. ' + error.message)
+    } finally {
+        guardandoPedido = false
+        const pendientes = card.children.length > 0
+        this.classList.toggle('disabled', !pendientes)
+        this.classList.toggle('btn-dark', !pendientes)
+        this.classList.toggle('btn-success', pendientes)
     }
 })

@@ -1,65 +1,50 @@
-document.getElementById('formulario-articulos')
-    .addEventListener('submit', function(e){
+const formulario = document.getElementById('formulario-articulos')
+const fechaInput = document.getElementById('fecha')
+const tabla = document.getElementById('tabla')
+const hoy = new Date()
+fechaInput.value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`
+let consultaActual = 0
 
-    const fecha = document.getElementById('fecha').value
-    const tabla = document.getElementById('tabla')
-
-    async function fetchGets(fecha) {
-        if(fecha === '') alert('Por favor, seleccione una fecha')
-        else {
-            const res = await fetch(`../backend/registros.php?fecha=${fecha}`)
-            const response = await res.json()
-
-            tabla.innerHTML = `
-                <thead>
-                    <tr class="bg-primary text-white">
-                        <th scope="col">sku</th>
-                        <th scope="col">nombre</th>
-                        <th scope="col">cantidad</th>
-                        <th scope="col">fecha</th>
-                    </tr>
-                </thead>
-            `
-
-            var tbody = document.createElement("tbody");
-
-            for (let i = 0; i < Object.keys(response).length; i++) {
-                const res2 = await fetch(`../backend/consulta.php?sku=${response[i].sku}`)
-                const response2 = await res2.json()
-
-                var tr = document.createElement('tr')
-                tr.classList.add('table-active')
-
-                // var th = document.createElement('th')
-                // th.setAttribute('scope', 'row')
-                // tr.appendChild(th)
-                
-                var sku = document.createElement('td')
-                sku.innerHTML = `${response[i].sku}`
-                tr.appendChild(sku)
-
-                var nombre = document.createElement('td')
-                nombre.innerHTML = `${response2.nombre}`
-                tr.appendChild(nombre)
-
-                var cantidad = document.createElement('td')
-                cantidad.innerHTML = `${response[i].cantidad}`
-                tr.appendChild(cantidad)
-
-                var fecha = document.createElement('td')
-                fecha.innerHTML = `${response[i].fecha}`
-                tr.appendChild(fecha)
-
-
-                tbody.appendChild(tr)
-                // tabla.appendChild(tbody)
-            }
-            tabla.appendChild(tbody)
-            console.log(response)
-            
-        }
+async function cargarRegistros() {
+    const consulta = ++consultaActual
+    if (!fechaInput.value) {
+        alert('Por favor, seleccione una fecha')
+        return
     }
-
-    fetchGets(fecha)
+    tabla.innerHTML = '<thead><tr><th>SKU</th><th>Nombre</th><th>Cantidad</th><th>Fecha</th></tr></thead><tbody></tbody>'
+    const tbody = tabla.querySelector('tbody')
+    function mensaje(texto) {
+        tbody.replaceChildren()
+        const td = document.createElement('td')
+        td.colSpan = 4
+        td.textContent = texto
+        const tr = document.createElement('tr')
+        tr.appendChild(td)
+        tbody.appendChild(tr)
+    }
+    mensaje('Cargando registros…')
+    try {
+        const res = await fetch(`../backend/registros.php?fecha=${encodeURIComponent(fechaInput.value)}`)
+        const registros = await res.json()
+        if (consulta !== consultaActual) return
+        if (!res.ok || !Array.isArray(registros)) throw new Error('No se pudieron cargar los registros')
+        tbody.replaceChildren()
+        if (registros.length === 0) mensaje('No hay ventas registradas para esta fecha.')
+        for (const registro of registros) {
+            const tr = document.createElement('tr')
+            for (const valor of [registro.sku, registro.nombre ?? 'Artículo eliminado del catálogo', registro.cantidad, registro.fecha]) {
+                const td = document.createElement('td')
+                td.textContent = valor
+                tr.appendChild(td)
+            }
+            tbody.appendChild(tr)
+        }
+    } catch (error) {
+        if (consulta === consultaActual) mensaje('No se pudieron cargar los registros. Inténtalo de nuevo.')
+    }
+}
+formulario.addEventListener('submit', function(e) {
     e.preventDefault()
+    cargarRegistros()
 })
+cargarRegistros()

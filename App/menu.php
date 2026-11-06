@@ -1,3 +1,11 @@
+<?php
+session_start();
+header('Cache-Control: no-store');
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.html');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -46,7 +54,7 @@
     
                     </div>
                 </div>
-                <a href="./login.html"><div class="text-center cerrar-sesion">Cerrar Sesión</div></a>
+                <a href="./backend/logout.php"><div class="text-center cerrar-sesion">Cerrar Sesión</div></a>
             </div>
         </div>
     </body>

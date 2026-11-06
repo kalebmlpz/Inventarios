@@ -5,16 +5,20 @@ document.getElementById('loginForm')
     const password = document.getElementById('password').value
 
     async function fetchPosts(username, password) {
-        fetch(`./backend/login.php?username=${username}&password=${password}`)
-            .then(function(response) {
-                if (response.ok) {
-                    window.location.href = './menu.html'
+        fetch('./backend/login.php', {
+            method: 'POST',
+            body: new URLSearchParams({ username, password })
+        })
+            .then(async function(response) {
+                const result = await response.json()
+                if (response.ok && result.message === 'OK') {
+                    window.location.href = './menu.php'
                 } else {
                     alert('Usuario o contraseña incorrectos.')
                 }
             })
             .catch(function(error) {
-                console.log('Se produjo un error:', error)
+                alert('No se pudo iniciar sesión. Inténtalo de nuevo.')
             })
     }
     fetchPosts(username, password)
