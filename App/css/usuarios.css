@@ -7,8 +7,8 @@
 * { box-sizing: border-box; }
 body { margin: 0; }
 .users-page { width: min(480px, 100%); margin: 0 auto; padding: 40px 24px; }
-.back-link { display: inline-flex; gap: 10px; align-items: center; margin-bottom: 24px; color: #485451; text-decoration: none; font-size: 14px; font-weight: 600; }
-.back-link:hover { color: #14634e; text-decoration: underline; }
+.back-link { display: inline-flex; gap: 10px; align-items: center; margin-bottom: 24px; color: #1a1a1a; text-decoration: none; font-size: 14px; font-weight: 600; }
+.back-link:hover { color: #1a1a1a; text-decoration: underline; }
 .user-card { background: white; border: 1px solid #dde3df; border-radius: 18px; overflow: hidden; box-shadow: 0 12px 36px #20372a09; }
 .card-header { padding: 32px 36px; border-bottom: 1px solid #e7ebe8; }
 .section-label { color: #437060; font-size: 11px; font-weight: 700; letter-spacing: 1.7px; }
@@ -24,9 +24,9 @@ input, select { width: 100%; min-height: 46px; border: 1px solid #ced8d1; border
 input::placeholder { color: #818b85; }
 input:focus, select:focus { border-color: #24785e; outline: 3px solid #24785e20; }
 small { display: block; margin-top: 7px; color: #68766e; font-size: 12px; line-height: 1.5; }
-button { display: flex; width: 100%; align-items: center; justify-content: space-between; min-height: 48px; border: 0; border-radius: 8px; padding: 12px 18px; background: #1b2823; color: white; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
-button:hover { background: #285640; }
-button:focus-visible, .back-link:focus-visible { outline: 3px solid #378c69; outline-offset: 4px; }
+button { display: flex; width: 100%; align-items: center; justify-content: space-between; min-height: 48px; border: 0; border-radius: 8px; padding: 12px 18px; background: #1a1a1a; color: white; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+button:hover { background: #343a40; }
+button:focus-visible, .back-link:focus-visible { outline: 3px solid #1a1a1a; outline-offset: 4px; }
 .role-guide { margin: 24px 24px 24px 0; border-radius: 12px; padding: 28px; background: #f1f6f2; border: 1px solid #e2eae3; }
 .guide-icon { display: grid; place-items: center; width: 40px; height: 40px; margin-bottom: 18px; border-radius: 10px; background: #dfece1; color: #326345; font-size: 28px; }
 .role-guide h2 { margin-bottom: 10px; }
