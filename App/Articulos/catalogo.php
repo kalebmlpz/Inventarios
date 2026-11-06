@@ -59,11 +59,12 @@ $stmt = $conn->prepare('SELECT * FROM articulo WHERE nombre LIKE ? OR CAST(sku A
 $stmt->execute(['%'.$q.'%', '%'.$q.'%']); $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $showForm = $admin && ($editing || basename($_SERVER['SCRIPT_NAME']) === 'alta.php');
 ?>
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Productos y existencias · Florería</title><link rel="stylesheet" href="../css/usuarios.css"><link rel="stylesheet" href="../css/catalogo.css"></head>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Productos y existencias · Florería</title><link rel="stylesheet" href="../css/usuarios.css?v=<?= filemtime(__DIR__ . '/../css/usuarios.css') ?>"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__ . '/../css/catalogo.css') ?>"></head>
 <body><main class="catalog-page">
 <a class="back-link" href="<?= $showForm ? 'consulta.php' : '../menu.php' ?>">← <?= $showForm ? 'Volver al catálogo' : 'Volver al menú' ?></a>
 <header class="catalog-header"><div><span class="eyebrow">FLORERÍA / INVENTARIO</span><h1>Productos y existencias<span class="title-dot">.</span></h1><p>Todo lo que necesitas para dar vida a cada arreglo.</p></div><span class="header-note">Flores · Arreglos · Bases · Accesorios</span></header>
 <?php if (isset($_GET['guardado'])): ?><p class="notice notice-success" role="status">Producto guardado correctamente.</p><?php endif; ?>
+<?php if (isset($_GET['eliminado'])): ?><p class="notice notice-success" role="status">Producto eliminado del catálogo. Su historial de ventas se conserva.</p><?php endif; ?>
 <?php if ($message): ?><p class="notice notice-error" role="alert"><?= esc($message) ?></p><?php endif; ?>
 <?php if ($showForm): ?>
 <section class="product-editor">
@@ -80,9 +81,9 @@ $showForm = $admin && ($editing || basename($_SERVER['SCRIPT_NAME']) === 'alta.p
 <h2><?= $editing ? 'Un detalle hace la diferencia.' : 'Un nuevo detalle para tu florería.' ?></h2>
 <p>Organiza cada flor y cada material desde su primera entrada al catálogo.</p>
 <nav class="section-nav" aria-label="Secciones del formulario">
-<a href="#identidad"><span>01</span> Identidad del producto <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 13L13 3M4 3H13V12" stroke="currentColor" stroke-width="1.4"/></svg></a>
-<a href="#existencias"><span>02</span> Existencias y precio <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 13L13 3M4 3H13V12" stroke="currentColor" stroke-width="1.4"/></svg></a>
-<a href="#detalles"><span>03</span> Detalles adicionales <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 13L13 3M4 3H13V12" stroke="currentColor" stroke-width="1.4"/></svg></a>
+<a href="#identidad">Identidad del producto <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 13L13 3M4 3H13V12" stroke="currentColor" stroke-width="1.4"/></svg></a>
+<a href="#existencias">Existencias y precio <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 13L13 3M4 3H13V12" stroke="currentColor" stroke-width="1.4"/></svg></a>
+<a href="#detalles">Detalles adicionales <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 13L13 3M4 3H13V12" stroke="currentColor" stroke-width="1.4"/></svg></a>
 </nav>
 </aside>
 <form method="post" class="product-form">
@@ -97,13 +98,13 @@ function catalogInput($key, $label, $type, $min, $editing, $placeholder = '') {
 function catalogSelect($key, $label, $options, $editing) { ?>
 <div class="field"><label for="<?= $key ?>"><?= $label ?></label><select id="<?= $key ?>" name="<?= $key ?>"><?php foreach ($options as $option): ?><option <?= ($editing[$key] ?? '') === $option ? 'selected' : '' ?>><?= esc($option) ?></option><?php endforeach; ?></select></div>
 <?php } ?>
-<fieldset id="identidad"><legend><span>01</span> Identidad del producto</legend><div class="form-grid">
+<fieldset id="identidad"><legend>Identidad del producto</legend><div class="form-grid">
 <?php catalogInput('nombre','Nombre del producto','text',null,$editing,'Ej. Rosa roja Freedom'); catalogInput('sku','Código numérico','number',1,$editing,'Ej. 1001'); catalogSelect('categoria','Categoría',$categorias,$editing); catalogSelect('unidad','Unidad de medida',$unidades,$editing); ?>
 </div></fieldset>
-<fieldset id="existencias"><legend><span>02</span> Existencias y precio</legend><div class="form-grid stock-grid">
+<fieldset id="existencias"><legend>Existencias y precio</legend><div class="form-grid stock-grid">
 <?php catalogInput('stock','Disponibles','number',0,$editing); catalogInput('stock_minimo','Stock mínimo','number',0,$editing); catalogInput('precio','Precio por unidad','number',0,$editing); ?>
 </div><p class="field-note">Las existencias se cuentan en la unidad que elegiste.</p></fieldset>
-<fieldset id="detalles"><legend><span>03</span> Detalles adicionales</legend>
+<fieldset id="detalles"><legend>Detalles adicionales</legend>
 <?php catalogSelect('modalidad','Modalidad del arreglo',$modalidades,$editing); ?>
 <p class="field-note">Solo para arreglos: preparados, por encargo o ambas formas.</p>
 <div class="field"><label for="observaciones">Observaciones <span class="optional">/ opcional</span></label><textarea id="observaciones" name="observaciones" maxlength="500" rows="2" placeholder="Color, tamaño, cuidados o algún detalle especial…"><?= esc($editing['observaciones'] ?? '') ?></textarea></div>
@@ -114,7 +115,7 @@ function catalogSelect($key, $label, $options, $editing) { ?>
 <?php if (!$showForm): ?>
 <section class="user-card catalog-list"><div class="list-heading"><div><span class="eyebrow">A LA VISTA</span><h2>Tu catálogo</h2></div><?php if ($admin): ?><a class="action" href="alta.php">+ Nuevo producto</a><?php endif; ?></div><form class="search" method="get"><label for="q">Buscar producto</label><div><input id="q" name="q" value="<?= esc($q) ?>" placeholder="Nombre o código"><button>Buscar</button></div></form>
 <div class="table-wrap"><table><thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Existencias</th><th>Mínimo</th><th>Precio</th><th>Modalidad</th><?php if ($admin): ?><th>Acciones</th><?php endif; ?></tr></thead><tbody>
-<?php foreach ($productos as $producto): ?><tr><td><?= esc($producto['sku']) ?></td><td><strong><?= esc($producto['nombre']) ?></strong><?php if ($producto['observaciones']): ?><small><?= esc($producto['observaciones']) ?></small><?php endif; ?></td><td><?= esc($producto['categoria']) ?></td><td><span class="<?= $producto['stock'] <= $producto['stock_minimo'] ? 'low-stock' : '' ?>"><?= esc($producto['stock']) ?> <?= esc($producto['unidad']) ?></span></td><td><?= esc($producto['stock_minimo']) ?></td><td><?= number_format((float)$producto['precio'], 2) ?></td><td><?= esc($producto['modalidad']) ?></td><?php if ($admin): ?><td><a class="edit-link" href="consulta.php?editar=<?= (int)$producto['id_articulo'] ?>">Editar</a></td><?php endif; ?></tr><?php endforeach; ?>
+<?php foreach ($productos as $producto): ?><tr><td><?= esc($producto['sku']) ?></td><td><strong><?= esc($producto['nombre']) ?></strong><?php if ($producto['observaciones']): ?><small><?= esc($producto['observaciones']) ?></small><?php endif; ?></td><td><?= esc($producto['categoria']) ?></td><td><span class="<?= $producto['stock'] <= $producto['stock_minimo'] ? 'low-stock' : '' ?>"><?= esc($producto['stock']) ?> <?= esc($producto['unidad']) ?></span></td><td><?= esc($producto['stock_minimo']) ?></td><td><?= number_format((float)$producto['precio'], 2) ?></td><td><?= esc($producto['modalidad']) ?></td><?php if ($admin): ?><td><div class="row-actions"><a class="edit-link" href="consulta.php?editar=<?= (int)$producto['id_articulo'] ?>">Editar</a><form method="post" action="../backend/eliminar_producto.php" onsubmit="return confirm('¿Eliminar definitivamente este producto y sus existencias del catálogo? Esta acción no se puede deshacer. El historial de ventas se conserva.')"><input type="hidden" name="csrf" value="<?= esc($_SESSION['csrf']) ?>"><input type="hidden" name="id" value="<?= (int)$producto['id_articulo'] ?>"><button class="delete-product" aria-label="Eliminar <?= esc($producto['nombre']) ?>">Eliminar</button></form></div></td><?php endif; ?></tr><?php endforeach; ?>
 <?php if (!$productos): ?><tr><td colspan="8">No se encontraron productos.</td></tr><?php endif; ?>
 </tbody></table></div></section>
 <?php endif; ?>

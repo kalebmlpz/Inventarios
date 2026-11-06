@@ -20,6 +20,7 @@ try:
  for path in ['usuarios.php','Articulos/alta.php','Articulos/cambio.php','Articulos/baja.php']:
   assert call(cash,path)[0]==403,path
  assert call(cash,'backend/alta.php',dict(sku='123'))[0]==403
+ assert call(cash,'backend/eliminar_producto.php',dict(id=1,csrf='incorrecto'))[0]==403
  assert call(cash,'backend/baja.php?sku=123',method='DELETE')[0]==403
  assert call(cash,'backend/consulta.php?sku=123456')[0]==200
  assert call(cash,'Articulos/consulta.php')[0]==200

@@ -8,7 +8,7 @@
 body { margin: 0; }
 .users-page { width: min(480px, 100%); margin: 0 auto; padding: 40px 24px; }
 .back-link { display: inline-flex; gap: 10px; align-items: center; margin-bottom: 24px; color: #1a1a1a; text-decoration: none; font-size: 14px; font-weight: 600; }
-.back-link:hover { color: #1a1a1a; text-decoration: underline; }
+.back-link:hover { color: #1a1a1a; text-decoration: none; }
 .user-card { background: white; border: 1px solid #dde3df; border-radius: 18px; overflow: hidden; box-shadow: 0 12px 36px #20372a09; }
 .card-header { padding: 32px 36px; border-bottom: 1px solid #e7ebe8; }
 .section-label { color: #437060; font-size: 11px; font-weight: 700; letter-spacing: 1.7px; }
