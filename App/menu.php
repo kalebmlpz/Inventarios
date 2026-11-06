@@ -3,7 +3,7 @@ require_once __DIR__ . '/backend/auth.php';
 $currentUser = require_access(['Administrador', 'Cajero'], false);
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
     <head>
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -16,9 +16,10 @@ $currentUser = require_access(['Administrador', 'Cajero'], false);
     </head>
     <body>
         <div class="display-center">
-            <div class="">
+            <div class="menu-panel">
                 <h1 class="text-primary text-center text-menu">Menú</h1>
-                <p class="text-center"><?= htmlspecialchars($currentUser['username'], ENT_QUOTES, 'UTF-8') ?> — <?= $currentUser['rol'] ?></p><div class="box">
+                <p class="text-center"><?= $currentUser['rol'] ?></p>
+                <div class="box">
                     <div class="menu">
     
                         <a href="<?= $currentUser['rol'] === 'Administrador' ? './Articulos/alta.php' : './Articulos/consulta.php' ?>">
@@ -50,8 +51,10 @@ $currentUser = require_access(['Administrador', 'Cajero'], false);
     
                     </div>
                 </div>
-                <?php if ($currentUser['rol'] === 'Administrador'): ?><p class="text-center"><a href="./usuarios.php">Administrar usuarios</a></p><?php endif; ?>
-                <a href="./backend/logout.php"><div class="text-center cerrar-sesion">Cerrar Sesión</div></a>
+                <div class="menu-actions">
+                <?php if ($currentUser['rol'] === 'Administrador'): ?><a class="menu-action" href="./usuarios.php">Administrar usuarios</a><?php endif; ?>
+                <a class="menu-action" href="./backend/logout.php">Cerrar sesión</a>
+                </div>
             </div>
         </div>
     </body>

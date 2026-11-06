@@ -23,7 +23,9 @@ a {
 
 .display-center {
     display: flex;
-    height: 100vh;
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding: 24px 16px;
 
     justify-content: center;
     align-items: center;
@@ -34,7 +36,7 @@ a {
     padding: 20px;
 
     grid-template-columns: repeat(3, 1fr);
-    grid-column-gap: 1em;
+    gap: 16px;
 }
 
 .menu-item {
@@ -42,8 +44,9 @@ a {
     justify-content: center;
     align-items: center;
 
-    height: 150px;
-    width: 150px;
+    box-sizing: border-box;
+    min-height: 210px;
+    padding: 20px 12px;
     
     color: white;
 
@@ -57,7 +60,10 @@ a {
 }
 
 .dis-block {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
 }
 
 .texto {
@@ -71,7 +77,8 @@ a {
 
     background-image: url(../img/articulos.png);
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: contain;
+    background-position: center;
     
 }
 
@@ -82,7 +89,8 @@ a {
 
     background-image: url(../img/ventas.png);
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: contain;
+    background-position: center;
 }
 
 #registros {
@@ -92,7 +100,8 @@ a {
 
     background-image: url(../img/registros.png);
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: contain;
+    background-position: center;
 }
 
 .box {
@@ -103,4 +112,56 @@ a {
 .cerrar-sesion {
     margin: 10px 0;
     color: var(--principal-color);
+}
+.menu-panel {
+    width: min(100%, 720px);
+}
+
+.menu-panel > p {
+    margin-bottom: 18px;
+}
+
+.menu-item h3 {
+    font-size: 17px;
+    line-height: 1.4;
+    letter-spacing: 1px;
+    overflow-wrap: anywhere;
+}
+
+.menu-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.menu-action,
+.menu-action:visited {
+    display: inline-block;
+    padding: 12px 20px;
+    border: 1px solid var(--light-gray);
+    border-radius: 6px;
+    color: var(--principal-color);
+    font-weight: 600;
+    text-align: center;
+}
+
+.menu-action:hover {
+    background-color: var(--lighter-gray);
+}
+
+.menu-action:focus-visible {
+    outline: 2px solid var(--principal-color);
+    outline-offset: 4px;
+}
+
+@media (max-width: 560px) {
+    .menu {
+        grid-template-columns: 1fr;
+    }
+
+    .menu-item {
+        min-height: 190px;
+    }
 }
