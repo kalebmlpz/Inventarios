@@ -17,7 +17,7 @@ try:
  assert 'Usuario creado correctamente' in call(admin,'usuarios.php',dict(csrf=token,username=name,password='Temporal123',rol='Cajero'))[1]
  assert call(cash,'backend/login.php',dict(username=name,password='Temporal123',rol='Administrador'))[0]==200
  assert 'Mis operaciones' in call(cash,'menu.php')[1]
- for path in ['usuarios.php','Articulos/alta.php','Articulos/cambio.php','Articulos/baja.php']:
+ for path in ['usuarios.php','Articulos/alta.php','Articulos/cambio.php','Articulos/baja.php','Articulos/componentes.php?id=1']:
   assert call(cash,path)[0]==403,path
  assert call(cash,'backend/alta.php',dict(sku='123'))[0]==403
  assert call(cash,'backend/eliminar_producto.php',dict(id=1,csrf='incorrecto'))[0]==403
@@ -27,7 +27,10 @@ try:
  assert call(admin,'Articulos/alta.php')[0]==200
  # Isolate operation attribution with a unique SKU; cleanup only this test's records.
  sku=str(int(uuid.uuid4().hex[:7],16)+1000000000)
- for c in [admin,cash]:assert call(c,'backend/venta.php',dict(sku=sku,cantidad=1,fecha='2099-12-29',usuario_id=1))[0]==201
+ assert 'Producto guardado correctamente' in call(admin,'Articulos/alta.php',dict(csrf=token,id=0,sku=sku,nombre='Test roles',categoria='Flores',unidad='Tallo',stock=2,stock_minimo=0,precio=1,observaciones='',modalidad='Individual'))[1]
+ for c in [admin,cash]:
+  sales=call(c,'Ventas/ventas.php')[1];csrf=re.search('id="csrf" value="([^"]+)"',sales)[1]
+  assert call(c,'backend/venta.php',dict(csrf=csrf,operacion_id=uuid.uuid4().hex,sku=sku,cantidad=1,fecha='2099-12-29',usuario_id=1))[0]==201
  own=json.loads(call(cash,'backend/registros.php?fecha=2099-12-29&usuario_id=1')[1])
  allrows=json.loads(call(admin,'backend/registros.php?fecha=2099-12-29')[1])
  assert len([r for r in own if r['sku']==sku])==1
@@ -41,5 +44,6 @@ try:
  assert call(cash,'backend/consulta.php')[0]==401
  print('PASS: roles, direct URL/API restrictions, spoofed role/author ignored, own records, role refresh, logout')
 finally:
- if 'sku' in locals():sql("DELETE FROM registros WHERE sku='"+sku+"' AND fecha='2099-12-29'")
+ if 'sku' in locals():
+  sql("DELETE FROM registros WHERE sku='"+sku+"'; DELETE FROM articulo WHERE sku="+sku)
  sql("DELETE FROM usuarios WHERE username='"+name+"'")

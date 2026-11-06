@@ -11,12 +11,12 @@ async function cargarRegistros() {
         alert('Por favor, seleccione una fecha')
         return
     }
-    tabla.innerHTML = '<thead><tr><th>SKU</th><th>Nombre</th><th>Cantidad</th><th>Fecha</th></tr></thead><tbody></tbody>'
+    tabla.innerHTML = '<thead><tr><th>SKU</th><th>Nombre</th><th>Cantidad</th><th>Tipo</th><th>Responsable</th><th>Detalle</th></tr></thead><tbody></tbody>'
     const tbody = tabla.querySelector('tbody')
     function mensaje(texto) {
         tbody.replaceChildren()
         const td = document.createElement('td')
-        td.colSpan = 4
+        td.colSpan = 6
         td.textContent = texto
         const tr = document.createElement('tr')
         tr.appendChild(td)
@@ -29,14 +29,28 @@ async function cargarRegistros() {
         if (consulta !== consultaActual) return
         if (!res.ok || !Array.isArray(registros)) throw new Error('No se pudieron cargar los registros')
         tbody.replaceChildren()
-        if (registros.length === 0) mensaje('No hay ventas registradas para esta fecha.')
+        if (registros.length === 0) mensaje('No hay movimientos registrados para esta fecha.')
         for (const registro of registros) {
             const tr = document.createElement('tr')
-            for (const valor of [registro.sku, registro.nombre ?? 'Artículo eliminado del catálogo', registro.cantidad, registro.fecha]) {
+            for (const valor of [registro.sku, registro.nombre ?? 'Artículo eliminado del catálogo', registro.cantidad, registro.tipo + (registro.modo ? ' · ' + registro.modo : ''), registro.responsable ?? 'Sin autor registrado']) {
                 const td = document.createElement('td')
                 td.textContent = valor
                 tr.appendChild(td)
             }
+            const cell = document.createElement('td')
+            const details = document.createElement('details')
+            const summary = document.createElement('summary')
+            summary.textContent = 'Ver movimientos'
+            details.appendChild(summary)
+            for (const movement of registro.movimientos || []) {
+                const line = document.createElement('p')
+                const quantity = Number(movement.cantidad)
+                line.textContent = `${movement.nombre}: ${quantity > 0 ? '+' : ''}${quantity} · stock resultante: ${movement.stock_resultante}`
+                details.appendChild(line)
+            }
+            if (registro.movimientos?.length) cell.appendChild(details)
+            else cell.textContent = 'Registro anterior sin detalle de existencias'
+            tr.appendChild(cell)
             tbody.appendChild(tr)
         }
     } catch (error) {

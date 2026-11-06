@@ -1,54 +1,8 @@
 <?php
-require_once __DIR__ . '/../backend/auth.php';
-$currentUser = require_access(['Administrador', 'Cajero'], false);
+require_once __DIR__.'/../backend/auth.php';
+$user=require_access(['Administrador','Cajero'],false);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-        <title>Vender</title>
-
-        <!-- CDN de Boostrap -->
-        <link rel="stylesheet" href="./bootstrap/bootstrap.min.css">
-        <link rel="stylesheet" href="./css/registros.css">
-    </head>
-
-    <body>
-        <div class="text-center mt-5">
-            <h1 class="h1">Punto de venta</h1>
-        </div>
-
-        <div class="container-flex box">
-        
-            <div class="venta">
-
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h4 class="text-center">Registros</h4>
-                    </div>
-
-                    <form id="formulario-articulos" class="card-body d-grid gap-2">
-                        <div class="form-group">
-                            <input type="date" id="fecha" class="form-control mb-2">
-                        </div>
-                        <input type="submit" class="btn btn-primary mt-2 mb-4">
-
-                        <table id="tabla" class="table table-hover">
-
-                          </table>
-                    </form>
-                </div>
-
-                <button type="button" class="btn back p-0"><a class="nav-link p-3 w-100" href="../menu.php">Volver al menú</a></button>
-
-
-            </div>
-        </div>
-
-        <!-- Sripts -->
-        <script src="./js/registros.js"></script>
-    </body>
-</html>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Historial · Florería</title><link rel="stylesheet" href="../css/usuarios.css"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__.'/../css/catalogo.css') ?>"></head><body><main class="catalog-page">
+<a class="back-link" href="../menu.php">Volver al menú</a><header class="catalog-header"><div><span class="eyebrow">FLORERÍA / HISTORIAL</span><h1><?= $user['rol']==='Cajero'?'Mis operaciones':'Registros' ?></h1><p>Consulta ventas, preparaciones y cambios de existencias.</p></div></header>
+<section class="user-card"><form id="formulario-articulos" class="search"><label for="fecha">Fecha</label><div><input type="date" id="fecha" required><button>Consultar</button></div></form><div class="table-wrap"><table id="tabla"></table></div></section>
+</main><script src="js/registros.js?v=<?= filemtime(__DIR__.'/js/registros.js') ?>" defer></script></body></html>

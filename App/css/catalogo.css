@@ -67,3 +67,19 @@ tbody tr:hover { background: #faf8f2; }
 .delete-product:hover { background: #e6e1d7; }
 
 #arreglo-options[hidden] { display: none; }
+.recipe-row { display: grid; grid-template-columns: minmax(0, 1fr) 120px auto; align-items: end; gap: 16px; margin: 20px 0; }
+.recipe-row label { margin: 0; }
+.recipe-row select, .recipe-row input { margin-top: 8px; }
+.recipe-row button { width: auto; min-height: 44px; }
+.prepare-button { margin-top: 20px; width: auto; }
+.notice { background: #f1eee5; }
+@media(max-width:650px) { .recipe-row { grid-template-columns: 1fr; } .row-actions { flex-wrap: wrap; } }
+.sales-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+.sales-grid .field { margin-bottom: 20px; }
+.sale-line { display: flex; align-items: center; gap: 16px; margin: 18px 0; }
+.sale-line p { flex: 1; }
+.sale-line button { width: auto; }
+button:disabled { opacity: .5; cursor: default; }
+summary { cursor: pointer; font-weight: 600; }
+details p { font-size: 12px; min-width: 220px; }
+@media(max-width:700px) { .sales-grid { grid-template-columns: 1fr; } }

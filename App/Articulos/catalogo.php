@@ -2,8 +2,8 @@
 require_once __DIR__ . '/../backend/auth.php';
 $currentUser = require_access(['Administrador', 'Cajero'], false);
 $admin = $currentUser['rol'] === 'Administrador';
-require __DIR__ . '/../backend/config.php';
-$conn = new PDO("mysql:host={$db['host']};dbname={$db['db']};charset=utf8mb4", $db['username'], $db['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+require_once __DIR__ . '/../backend/inventario.php';
+$conn = inventoryDb();
 if (empty($_SESSION['csrf'])) $_SESSION['csrf'] = bin2hex(random_bytes(32));
 function esc($value) { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); }
 $categorias = ['Flores', 'Arreglos', 'Bases', 'Accesorios', 'Sin clasificar'];
@@ -27,26 +27,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         && ctype_digit($values['stock_minimo']) && (int)$values['stock_minimo'] <= 2147483647
         && preg_match('/^\d{1,8}(\.\d{1,2})?$/', $values['precio']);
     if ($values['categoria'] !== 'Arreglos') $values['modalidad'] = 'Individual';
+    if ($values['categoria'] === 'Arreglos' && $values['modalidad'] === 'Individual') $valid = false;
     if (!$valid || ($values['modalidad'] === 'Por encargo' && (int)$values['stock'] !== 0)) {
         $message = 'Revisa los datos. Las existencias son unidades enteras; un arreglo solo por encargo debe tener existencias cero.';
     } else {
-        $id = filter_var($_POST['id'] ?? 0, FILTER_VALIDATE_INT);
-        $stmt = $conn->prepare('SELECT id_articulo FROM articulo WHERE sku = ? AND id_articulo <> ?');
-        $stmt->execute([$values['sku'], $id]);
-        if ($stmt->fetch()) {
-            $message = 'El código ya pertenece a otro producto.';
-        } else {
-            try {
+        try {
+            inventoryLock($conn);
+            $id = filter_var($_POST['id'] ?? 0, FILTER_VALIDATE_INT);
+            if ($id === false || $id < 0) throw new DomainException('Producto inválido.');
+            $previous = $id ? inventoryProduct($conn, $id) : null;
+            if ($values['categoria'] === 'Arreglos' && (int)$values['stock'] !== (int)($previous['stock'] ?? 0)) throw new DomainException('Usa Preparar arreglos para aumentar sus unidades disponibles.');
+            $ref = $conn->prepare('SELECT COUNT(*) FROM componentes WHERE componente_id=?');
+            $ref->execute([$id]);
+            if ($values['categoria'] === 'Arreglos' && $ref->fetchColumn() > 0) throw new DomainException('Este material se usa en un arreglo; retíralo de sus componentes antes de cambiar su categoría.');
+            $stmt = $conn->prepare('SELECT id_articulo FROM articulo WHERE sku = ? AND id_articulo <> ?');
+            $stmt->execute([$values['sku'], $id]);
+            if ($stmt->fetch()) {
+            throw new DomainException('El código ya pertenece a otro producto.');
+            } else {
                 if ($id) {
                     $stmt = $conn->prepare('UPDATE articulo SET sku=:sku,nombre=:nombre,categoria=:categoria,unidad=:unidad,stock=:stock,stock_minimo=:stock_minimo,precio=:precio,observaciones=:observaciones,modalidad=:modalidad WHERE id_articulo=:id');
                     $stmt->execute($values + ['id' => $id]);
                 } else {
                     $stmt = $conn->prepare("INSERT INTO articulo (sku,nombre,categoria,unidad,stock,stock_minimo,precio,observaciones,modalidad,marca,modelo,departamento,clase,familia,fecha_alta,cantidad,descontinuado,fecha_baja) VALUES (:sku,:nombre,:categoria,:unidad,:stock,:stock_minimo,:precio,:observaciones,:modalidad,'','',0,0,0,CURDATE(),0,0,'1900-01-01')");
                     $stmt->execute($values);
+                    $id = $conn->lastInsertId();
                 }
+                $delta = (int)$values['stock'] - (int)($previous['stock'] ?? 0);
+                if ($delta !== 0) {
+                    $product = inventoryProduct($conn, $id);
+                    $record = recordOperation($conn, $product, $delta, $previous ? 'Ajuste' : 'Entrada inicial', $currentUser['id'], date('Y-m-d'));
+                    $product['stock'] = (int)($previous['stock'] ?? 0);
+                    changeStock($conn, $product, $delta, $record);
+                }
+                $conn->commit();
                 header('Location: consulta.php?guardado=1'); exit;
-            } catch (PDOException $e) { $message = 'No se pudo guardar el producto. Inténtalo de nuevo.'; }
-        }
+
+            }
+        } catch (DomainException $e) { if ($conn->inTransaction()) $conn->rollBack(); $message = $e->getMessage(); }
+          catch (PDOException $e) { if ($conn->inTransaction()) $conn->rollBack(); $message = 'No se pudo guardar el producto. Comprueba la actualización de la base.'; }
     }
     $editing = $values + ['id_articulo' => $_POST['id'] ?? 0];
 }
@@ -99,7 +118,7 @@ function catalogSelect($key, $label, $options, $editing) { ?>
 </div></fieldset>
 <fieldset id="existencias"><legend>Existencias y precio</legend><div class="form-grid stock-grid">
 <?php catalogInput('stock','Disponibles','number',0,$editing); catalogInput('stock_minimo','Stock mínimo','number',0,$editing); catalogInput('precio','Precio por unidad','number',0,$editing); ?>
-</div><p class="field-note">Las existencias se cuentan en la unidad que elegiste.</p></fieldset>
+</div><p class="field-note">Para materiales, editar la cantidad registra un ajuste. Para arreglos, usa Componentes / Preparar.</p></fieldset>
 <fieldset id="detalles"><legend>Información adicional</legend>
 <div id="arreglo-options">
 <?php catalogSelect('modalidad','Modalidad del arreglo',$modalidades,$editing); ?>
@@ -112,9 +131,9 @@ function catalogSelect($key, $label, $options, $editing) { ?>
 <script src="./js/catalogo.js?v=<?= filemtime(__DIR__ . '/js/catalogo.js') ?>" defer></script>
 <?php endif; ?>
 <?php if (!$showForm): ?>
-<section class="user-card catalog-list"><div class="list-heading"><div><span class="eyebrow">A LA VISTA</span><h2>Tu catálogo</h2></div><?php if ($admin): ?><a class="action" href="alta.php">+ Nuevo producto</a><?php endif; ?></div><form class="search" method="get"><label for="q">Buscar producto</label><div><input id="q" name="q" value="<?= esc($q) ?>" placeholder="Nombre o código"><button>Buscar</button></div></form>
+<section class="user-card catalog-list"><div class="list-heading"><div><h2>Catálogo</h2></div><?php if ($admin): ?><a class="action" href="alta.php">+ Nuevo producto</a><?php endif; ?></div><form class="search" method="get"><label for="q">Buscar producto</label><div><input id="q" name="q" value="<?= esc($q) ?>" placeholder="Nombre o código"><button>Buscar</button></div></form>
 <div class="table-wrap"><table><thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Existencias</th><th>Mínimo</th><th>Precio</th><th>Modalidad</th><?php if ($admin): ?><th>Acciones</th><?php endif; ?></tr></thead><tbody>
-<?php foreach ($productos as $producto): ?><tr><td><?= esc($producto['sku']) ?></td><td><strong><?= esc($producto['nombre']) ?></strong><?php if ($producto['observaciones']): ?><small><?= esc($producto['observaciones']) ?></small><?php endif; ?></td><td><?= esc($producto['categoria']) ?></td><td><span class="<?= $producto['stock'] <= $producto['stock_minimo'] ? 'low-stock' : '' ?>"><?= esc($producto['stock']) ?> <?= esc($producto['unidad']) ?></span></td><td><?= esc($producto['stock_minimo']) ?></td><td><?= number_format((float)$producto['precio'], 2) ?></td><td><?= esc($producto['modalidad']) ?></td><?php if ($admin): ?><td><div class="row-actions"><a class="edit-link" href="consulta.php?editar=<?= (int)$producto['id_articulo'] ?>">Editar</a><form method="post" action="../backend/eliminar_producto.php" onsubmit="return confirm('¿Eliminar definitivamente este producto y sus existencias del catálogo? Esta acción no se puede deshacer. El historial de ventas se conserva.')"><input type="hidden" name="csrf" value="<?= esc($_SESSION['csrf']) ?>"><input type="hidden" name="id" value="<?= (int)$producto['id_articulo'] ?>"><button class="delete-product" aria-label="Eliminar <?= esc($producto['nombre']) ?>">Eliminar</button></form></div></td><?php endif; ?></tr><?php endforeach; ?>
+<?php foreach ($productos as $producto): ?><tr><td><?= esc($producto['sku']) ?></td><td><strong><?= esc($producto['nombre']) ?></strong><?php if ($producto['observaciones']): ?><small><?= esc($producto['observaciones']) ?></small><?php endif; ?></td><td><?= esc($producto['categoria']) ?></td><td><span class="<?= $producto['stock'] <= $producto['stock_minimo'] ? 'low-stock' : '' ?>"><?= esc($producto['stock']) ?> <?= esc($producto['unidad']) ?></span></td><td><?= esc($producto['stock_minimo']) ?></td><td><?= number_format((float)$producto['precio'], 2) ?></td><td><?= esc($producto['modalidad']) ?></td><?php if ($admin): ?><td><div class="row-actions"><a class="edit-link" href="consulta.php?editar=<?= (int)$producto['id_articulo'] ?>">Editar</a><?php if ($producto['categoria'] === 'Arreglos'): ?><a class="edit-link" href="componentes.php?id=<?= (int)$producto['id_articulo'] ?>">Componentes / Preparar</a><?php endif; ?><form method="post" action="../backend/eliminar_producto.php" onsubmit="return confirm('¿Eliminar definitivamente este producto y sus existencias del catálogo? Esta acción no se puede deshacer. El historial de ventas se conserva.')"><input type="hidden" name="csrf" value="<?= esc($_SESSION['csrf']) ?>"><input type="hidden" name="id" value="<?= (int)$producto['id_articulo'] ?>"><button class="delete-product" aria-label="Eliminar <?= esc($producto['nombre']) ?>">Eliminar</button></form></div></td><?php endif; ?></tr><?php endforeach; ?>
 <?php if (!$productos): ?><tr><td colspan="8">No se encontraron productos.</td></tr><?php endif; ?>
 </tbody></table></div></section>
 <?php endif; ?>

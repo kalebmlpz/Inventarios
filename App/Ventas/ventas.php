@@ -1,67 +1,11 @@
 <?php
-require_once __DIR__ . '/../backend/auth.php';
-$currentUser = require_access(['Administrador', 'Cajero'], false);
+require_once __DIR__.'/../backend/auth.php';
+$user=require_access(['Administrador','Cajero'],false);
+if (empty($_SESSION['csrf'])) $_SESSION['csrf']=bin2hex(random_bytes(24));
 ?>
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-        <title>Vender</title>
-
-        <!-- CDN de Boostrap -->
-        <link rel="stylesheet" href="./bootstrap/bootstrap.min.css">
-        <link rel="stylesheet" href="./css/ventas.css">
-    </head>
-
-    <body>
-        <div class="text-center mt-5">
-            <h1 class="h1">Punto de venta</h1>
-        </div>
-
-        <div class="container-flex box">
-        
-            <div class="venta">
-
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h4 class="text-center">Vender artículo</h4>
-                    </div>
-
-                    <form id="formulario-articulos" class="card-body d-grid gap-2">
-
-                        <div class="form-group">
-                            <input type="number" id="sku" placeholder="SKU" class="form-control mb-2">
-                            <input type="number" id="cantidad" placeholder="Cantidad" class="form-control mb-2" min="1" max="999">
-                        </div>
-
-                        <input type="submit" value="Agregar al carrito" class="btn btn-primary mt-2">
-
-                    </form>
-                </div>
-
-                <button type="button" class="btn back p-0"><a class="nav-link p-3 w-100" href="../menu.php">Volver al menú</a></button>
-
-
-            </div>
-
-            <div class="lista">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h4 class="text-center">Lista de artículos</h4>
-                    </div>
-
-                    <div id="articulos">
-                    </div>
-                    <a id="finalizar" href="#" class="btn btn-dark disabled m-2">Finalizar Pedido</a>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- Sripts -->
-        <script src="./js/venta.js"></script>
-    </body>
-</html>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ventas · Florería</title><link rel="stylesheet" href="../css/usuarios.css"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__.'/../css/catalogo.css') ?>"></head><body><main class="catalog-page">
+<a class="back-link" href="../menu.php">Volver al menú</a><header class="catalog-header"><div><span class="eyebrow">FLORERÍA / VENTAS</span><h1>Registrar venta</h1><p>Vende productos disponibles o elabora un arreglo por encargo.</p></div></header>
+<div class="sales-grid"><section class="user-card"><form id="formulario-articulos" class="product-form"><h2>Agregar producto</h2><div class="field"><label for="sku">Código numérico</label><input id="sku" type="number" min="1" required></div><div class="field"><label for="cantidad">Cantidad</label><input id="cantidad" type="number" min="1" step="1" value="1" required></div><button>Buscar producto</button></form><div id="seleccion-producto" class="product-form" hidden><p id="nombre-producto"></p><label for="modo">Modalidad de venta</label><select id="modo"></select><p class="field-note">Disponible: descuenta el producto terminado. Por encargo: consume sus componentes al confirmar la venta y elaborar el arreglo.</p><button type="button" id="agregar-producto">Agregar al pedido</button></div></section>
+<section class="user-card"><div class="product-form"><h2>Pedido</h2><div id="articulos"></div><p id="estado-venta" role="status"></p><button id="finalizar" type="button" disabled>Finalizar pedido</button></div></section></div>
+<input type="hidden" id="csrf" value="<?= htmlspecialchars($_SESSION['csrf'],ENT_QUOTES,'UTF-8') ?>"><input type="hidden" id="usuario" value="<?= (int)$user['id'] ?>">
+</main><script src="js/venta.js?v=<?= filemtime(__DIR__.'/js/venta.js') ?>" defer></script></body></html>

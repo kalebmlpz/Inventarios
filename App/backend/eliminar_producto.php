@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/auth.php';
-require_access(['Administrador']);
+$user = require_access(['Administrador']);
 header('Content-Type: text/plain; charset=utf-8');
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -17,17 +17,27 @@ if (!$id) {
     exit('Selecciona un producto válido');
 }
 try {
-    require __DIR__ . '/config.php';
-    $conn = new PDO("mysql:host={$db['host']};dbname={$db['db']};charset=utf8mb4", $db['username'], $db['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-    // El historial de ventas se conserva; se elimina solo la ficha del catálogo.
+    require_once __DIR__ . '/inventario.php';
+    $conn = inventoryDb(); inventoryLock($conn);
+    $product = inventoryProduct($conn, $id);
+    $record = recordOperation($conn, $product, -(int)$product['stock'], 'Baja del catálogo', $user['id'], date('Y-m-d'));
+    if ((int)$product['stock'] > 0) changeStock($conn, $product, -(int)$product['stock'], $record);
+    // El historial y los nombres originales se conservan tras la eliminación.
     $stmt = $conn->prepare('DELETE FROM articulo WHERE id_articulo = ?');
     $stmt->execute([$id]);
     if (!$stmt->rowCount()) {
+        $conn->rollBack();
         http_response_code(404);
         exit('El producto ya no existe');
     }
+    $conn->commit();
     header('Location: ../Articulos/consulta.php?eliminado=1', true, 303);
+} catch (DomainException $e) {
+    if (isset($conn) && $conn->inTransaction()) $conn->rollBack();
+    http_response_code(404);
+    echo 'El producto ya no existe.';
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo 'No se pudo eliminar el producto. Inténtalo de nuevo.';
+    if (isset($conn) && $conn->inTransaction()) $conn->rollBack();
+    http_response_code(409);
+    echo 'No se pudo eliminar: si el material se usa en un arreglo, retíralo primero de sus componentes.';
 }
