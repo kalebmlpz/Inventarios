@@ -12,3 +12,11 @@ El administrador ve todos los registros; el cajero solo los asociados a su usuar
 Para una instalación nueva importa `App/punto_de_venta.sql` (compatible con MySQL y MariaDB). Incluye Admin / Admin123 como cuenta inicial; crea las demás cuentas desde el sistema. La migración 002 no se ejecuta en instalaciones nuevas.
 
 Este paso implementa permisos y atribución de operaciones. El descuento automático de existencias y el cambio de roles de usuarios existentes quedan para los siguientes pasos.
+
+## Catálogo de florería (primera etapa)
+
+Con respaldo previo, importa una sola vez `App/migrations/003_catalogo_floreria.sql` después de la migración 002 para conservar los datos actuales. No vuelvas a importar el volcado completo sobre la base existente. Las instalaciones nuevas ya incluyen estos campos en el volcado.
+
+Productos y existencias permite crear, editar y buscar flores, arreglos, bases y accesorios; el Cajero solo consulta. Se conservan los códigos numéricos y las existencias enteras para mantener compatibilidad con Ventas. Los productos anteriores quedan sin clasificar y conservan su stock. El precio se expresa por la unidad seleccionada; no se hacen conversiones entre paquetes y tallos.
+
+La modalidad identifica arreglos preparados, por encargo o ambas formas. Esta primera etapa **no** registra recetas/componentes, elaboración, reservas ni consumo automático de materiales. Tampoco modifica todavía el descuento de existencias de Ventas. Un arreglo solo por encargo debe tener cero existencias de unidades terminadas. No uses la edición del stock para registrar elaboración de arreglos; ese flujo se añadirá en la etapa de movimientos con su historial.

@@ -22,7 +22,7 @@ $currentUser = require_access(['Administrador', 'Cajero'], false);
                 <div class="box">
                     <div class="menu">
     
-                        <a href="<?= $currentUser['rol'] === 'Administrador' ? './Articulos/alta.php' : './Articulos/consulta.php' ?>">
+                        <a href="./Articulos/consulta.php">
                             <div class="menu-item">
                                 <div class="dis-block">
                                     <div id="articulos"></div>

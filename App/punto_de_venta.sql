@@ -31,7 +31,7 @@ DROP TABLE IF EXISTS `articulo`;
 CREATE TABLE IF NOT EXISTS `articulo` (
   `id_articulo` int NOT NULL AUTO_INCREMENT,
   `sku` int NOT NULL,
-  `nombre` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
+  `nombre` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
   `marca` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
   `modelo` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
   `departamento` int NOT NULL,
@@ -42,6 +42,12 @@ CREATE TABLE IF NOT EXISTS `articulo` (
   `cantidad` int NOT NULL,
   `descontinuado` int NOT NULL,
   `fecha_baja` date NOT NULL,
+  `categoria` varchar(30) NOT NULL DEFAULT 'Sin clasificar',
+  `unidad` varchar(20) NOT NULL DEFAULT 'Pieza',
+  `stock_minimo` int NOT NULL DEFAULT 0,
+  `precio` decimal(10,2) NOT NULL DEFAULT 0,
+  `observaciones` varchar(500) NOT NULL DEFAULT '',
+  `modalidad` varchar(20) NOT NULL DEFAULT 'Individual',
   PRIMARY KEY (`id_articulo`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1300 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
 
