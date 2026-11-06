@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/../backend/auth.php';
+$currentUser = require_access(['Administrador', 'Cajero'], false);
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -9,7 +13,7 @@
 
         <!-- CDN de Boostrap -->
         <link rel="stylesheet" href="./bootstrap/bootstrap.min.css">
-        <link rel="stylesheet" href="./css/registros.css">
+        <link rel="stylesheet" href="./css/ventas.css">
     </head>
 
     <body>
@@ -23,18 +27,18 @@
 
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h4 class="text-center">Registros</h4>
+                        <h4 class="text-center">Vender artículo</h4>
                     </div>
 
                     <form id="formulario-articulos" class="card-body d-grid gap-2">
+
                         <div class="form-group">
-                            <input type="date" id="fecha" class="form-control mb-2">
+                            <input type="number" id="sku" placeholder="SKU" class="form-control mb-2">
+                            <input type="number" id="cantidad" placeholder="Cantidad" class="form-control mb-2" min="1" max="999">
                         </div>
-                        <input type="submit" class="btn btn-primary mt-2 mb-4">
 
-                        <table id="tabla" class="table table-hover">
+                        <input type="submit" value="Agregar al carrito" class="btn btn-primary mt-2">
 
-                          </table>
                     </form>
                 </div>
 
@@ -42,9 +46,22 @@
 
 
             </div>
+
+            <div class="lista">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4 class="text-center">Lista de artículos</h4>
+                    </div>
+
+                    <div id="articulos">
+                    </div>
+                    <a id="finalizar" href="#" class="btn btn-dark disabled m-2">Finalizar Pedido</a>
+                </div>
+
+            </div>
         </div>
 
         <!-- Sripts -->
-        <script src="./js/registros.js"></script>
+        <script src="./js/venta.js"></script>
     </body>
 </html>

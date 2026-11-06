@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/auth.php';
+$currentUser = require_access(['Administrador', 'Cajero']);
 require 'config.php';
 header('Content-Type: application/json; charset=utf-8');
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -18,10 +20,10 @@ if (!is_string($sku) || !ctype_digit($sku) || !$cantidad || !$parsed || $parsed-
 }
 try {
     $conn = new PDO("mysql:host={$db['host']};dbname={$db['db']};charset=utf8mb4", $db['username'], $db['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-    $statement = $conn->prepare('INSERT INTO registros (sku, cantidad, fecha) VALUES (:sku, :cantidad, :fecha)');
-    $statement->execute(['sku' => $sku, 'cantidad' => $cantidad, 'fecha' => $fecha]);
+    $statement = $conn->prepare('INSERT INTO registros (sku, cantidad, fecha, usuario_id) VALUES (:sku, :cantidad, :fecha, :usuario_id)');
+    $statement->execute(['sku' => $sku, 'cantidad' => $cantidad, 'fecha' => $fecha, 'usuario_id' => $currentUser['id']]);
     http_response_code(201);
-    echo json_encode(['message' => 'OK', 'sku' => $sku, 'cantidad' => $cantidad, 'fecha' => $fecha]);
+    echo json_encode(['message' => 'OK', 'sku' => $sku, 'cantidad' => $cantidad, 'fecha' => $fecha, 'usuario_id' => $currentUser['id']]);
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode(['message' => 'No se pudo guardar la venta']);

@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/auth.php';
+$currentUser = require_access(['Administrador', 'Cajero']);
     include "config.php";
     include "utils.php";
 

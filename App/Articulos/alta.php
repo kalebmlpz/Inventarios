@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/../backend/auth.php';
+$currentUser = require_access(['Administrador'], false);
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -5,7 +9,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <title>CAMBIO</title>
+        <title>ALTA</title>
 
         <!-- CDN de Boostrap -->
         <link rel="stylesheet" href="./bootstrap/bootstrap.min.css">
@@ -19,10 +23,10 @@
         <!-- Navegación -->
         <nav class="navbar">
             <div class="container">
-                <button type="button" class="btn btn-success w-22 p-0"><a class="nav-link p-3" href="./alta.html">ALTA</a></button>
-                <button type="button" class="btn btn-danger w-22 p-0"><a class="nav-link p-3" href="./baja.html">BAJA</a></button>
-                <button type="button" class="btn btn-warning w-22 p-0"><a class="nav-link p-3" href="./cambio.html">CAMBIO</a></button>
-                <button type="button" class="btn btn-info w-22 p-0"><a class="nav-link p-3" href="./consulta.html">CONSULTA</a></button>
+                <button type="button" class="btn btn-success w-22 p-0"><a class="nav-link p-3" href="./alta.php">ALTA</a></button>
+                <button type="button" class="btn btn-danger w-22 p-0"><a class="nav-link p-3" href="./baja.php">BAJA</a></button>
+                <button type="button" class="btn btn-warning w-22 p-0"><a class="nav-link p-3" href="./cambio.php">CAMBIO</a></button>
+                <button type="button" class="btn btn-info w-22 p-0"><a class="nav-link p-3" href="./consulta.php">CONSULTA</a></button>
                 <button type="button" class="btn w-12 p-0"><a class="nav-link p-3" href="../menu.php">&LongLeftArrow;</a></button>
             </div>
         </nav>
@@ -33,14 +37,14 @@
                 <div>
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h4 class="text-center">Cambiar Artículo</h4>
+                            <h4 class="text-center">Agregar Artículo</h4>
                         </div>
 
                         <form id="formulario-articulos" class="card-body d-grid gap-2">
 
                             <div class="form-group">
                                 <input type="number" id="sku" placeholder="SKU" class="form-control mb-2" min="0" max="999999">
-                                <div id="error-duplicado" class="invalid-feedback" hidden>El código no existe en la base de datos</div>
+                                <div id="error-duplicado" class="invalid-feedback" hidden>El código ya existe en la base de datos</div>
                                 <div id="error-digitos" class="invalid-feedback" hidden>El código debe ser igual o menor a 6 dígitos</div>
                             </div>
 
@@ -102,8 +106,8 @@
         </div>
 
         <!-- Sripts -->
+        <script src="./js/validacion.js"></script>
         <script src="./js/app.js"></script>
-        <script src="./js/validacionCambio.js"></script>
         <script src="./js/alta.js"></script>
     </body>
 </html>

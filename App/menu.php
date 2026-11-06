@@ -1,10 +1,6 @@
 <?php
-session_start();
-header('Cache-Control: no-store');
-if (!isset($_SESSION['user_id'])) {
-    header('Location: login.html');
-    exit;
-}
+require_once __DIR__ . '/backend/auth.php';
+$currentUser = require_access(['Administrador', 'Cajero'], false);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,19 +18,19 @@ if (!isset($_SESSION['user_id'])) {
         <div class="display-center">
             <div class="">
                 <h1 class="text-primary text-center text-menu">Menú</h1>
-                <div class="box">
+                <p class="text-center"><?= htmlspecialchars($currentUser['username'], ENT_QUOTES, 'UTF-8') ?> — <?= $currentUser['rol'] ?></p><div class="box">
                     <div class="menu">
     
-                        <a href="./Articulos/alta.html">
+                        <a href="<?= $currentUser['rol'] === 'Administrador' ? './Articulos/alta.php' : './Articulos/consulta.php' ?>">
                             <div class="menu-item">
                                 <div class="dis-block">
                                     <div id="articulos"></div>
-                                    <h3 class="text-center">Articulos</h3>
+                                    <h3 class="text-center">Productos y existencias</h3>
                                 </div>
                             </div>
                         </a>
     
-                        <a href="./Ventas/ventas.html">
+                        <a href="./Ventas/ventas.php">
                             <div class="menu-item">
                                 <div class="dis-block">
                                     <div id="ventas"></div>
@@ -43,17 +39,18 @@ if (!isset($_SESSION['user_id'])) {
                             </div>
                         </a>
     
-                        <a href="./Registros/registros.html">
+                        <a href="./Registros/registros.php">
                             <div class="menu-item">
                                 <div class="dis-block">
                                     <div id="registros"></div>
-                                    <h3 class="text-center">Registros</h3>
+                                    <h3 class="text-center"><?= $currentUser['rol'] === 'Cajero' ? 'Mis operaciones' : 'Todos los registros' ?></h3>
                                 </div>
                             </div>
                         </a>
     
                     </div>
                 </div>
+                <?php if ($currentUser['rol'] === 'Administrador'): ?><p class="text-center"><a href="./usuarios.php">Administrar usuarios</a></p><?php endif; ?>
                 <a href="./backend/logout.php"><div class="text-center cerrar-sesion">Cerrar Sesión</div></a>
             </div>
         </div>

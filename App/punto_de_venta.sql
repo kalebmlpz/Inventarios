@@ -184,8 +184,9 @@ DROP TABLE IF EXISTS `registros`;
 CREATE TABLE IF NOT EXISTS `registros` (
   `sku` varchar(50) DEFAULT NULL,
   `cantidad` int DEFAULT NULL,
-  `fecha` date DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `fecha` date DEFAULT NULL,
+  `usuario_id` int DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `registros`
@@ -214,16 +215,17 @@ DROP TABLE IF EXISTS `usuarios`;
 CREATE TABLE IF NOT EXISTS `usuarios` (
   `id` int NOT NULL AUTO_INCREMENT,
   `username` varchar(50) NOT NULL,
-  `password` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `rol` enum('Administrador','Cajero') NOT NULL DEFAULT 'Cajero',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `usuarios`
 --
 
-INSERT INTO `usuarios` (`id`, `username`, `password`) VALUES
-(1, 'username', 'password');
+INSERT INTO `usuarios` (`id`, `username`, `password`, `rol`) VALUES
+(1, 'Admin', 'Admin123', 'Administrador');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

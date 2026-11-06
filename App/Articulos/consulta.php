@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/../backend/auth.php';
+$currentUser = require_access(['Administrador', 'Cajero'], false);
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -5,7 +9,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <title>BAJA</title>
+        <title>CONSULTA</title>
 
         <!-- CDN de Boostrap -->
         <link rel="stylesheet" href="./bootstrap/bootstrap.min.css">
@@ -19,10 +23,10 @@
         <!-- Navegación -->
         <nav class="navbar">
             <div class="container">
-                <button type="button" class="btn btn-success w-22 p-0"><a class="nav-link p-3" href="./alta.html">ALTA</a></button>
-                <button type="button" class="btn btn-danger w-22 p-0"><a class="nav-link p-3" href="./baja.html">BAJA</a></button>
-                <button type="button" class="btn btn-warning w-22 p-0"><a class="nav-link p-3" href="./cambio.html">CAMBIO</a></button>
-                <button type="button" class="btn btn-info w-22 p-0"><a class="nav-link p-3" href="./consulta.html">CONSULTA</a></button>
+<?php if ($currentUser['rol'] === 'Administrador'): ?>                <button type="button" class="btn btn-success w-22 p-0"><a class="nav-link p-3" href="./alta.php">ALTA</a></button><?php endif; ?>
+<?php if ($currentUser['rol'] === 'Administrador'): ?>                <button type="button" class="btn btn-danger w-22 p-0"><a class="nav-link p-3" href="./baja.php">BAJA</a></button><?php endif; ?>
+<?php if ($currentUser['rol'] === 'Administrador'): ?>                <button type="button" class="btn btn-warning w-22 p-0"><a class="nav-link p-3" href="./cambio.php">CAMBIO</a></button><?php endif; ?>
+                <button type="button" class="btn btn-info w-22 p-0"><a class="nav-link p-3" href="./consulta.php">CONSULTA</a></button>
                 <button type="button" class="btn w-12 p-0"><a class="nav-link p-3" href="../menu.php">&LongLeftArrow;</a></button>
             </div>
         </nav>
@@ -33,7 +37,7 @@
                 <div>
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h4 class="text-center">Eliminar Artículo</h4>
+                            <h4 class="text-center">Consulta Artículo</h4>
                         </div>
 
                         <form id="formulario-articulos" class="card-body d-grid gap-2">
@@ -52,6 +56,6 @@
 
         <!-- Sripts -->
         <script src="./js/app.js"></script>
-        <script src="./js/baja.js"></script>
+        <script src="./js/consulta.js"></script>
     </body>
 </html>

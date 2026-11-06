@@ -21,10 +21,10 @@ if (!is_string($username) || !is_string($password) || $username === '' || $passw
 try {
     require 'config.php';
     $conn = new PDO("mysql:host={$db['host']};dbname={$db['db']};charset=utf8mb4", $db['username'], $db['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-    $sql = $conn->prepare('SELECT id FROM usuarios WHERE username = :username AND password = :password');
-    $sql->execute(['username' => $username, 'password' => $password]);
+    $sql = $conn->prepare('SELECT id, password, rol FROM usuarios WHERE username = :username');
+    $sql->execute(['username' => $username]);
     $user = $sql->fetch(PDO::FETCH_ASSOC);
-    if (!$user) {
+    if (!$user || !(password_verify($password, $user['password']) || hash_equals($user['password'], $password)) || !in_array($user['rol'], ['Administrador', 'Cajero'], true)) {
         http_response_code(401);
         echo json_encode(['message' => 'Usuario o contraseña incorrectos']);
         exit;
