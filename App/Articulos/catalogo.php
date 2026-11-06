@@ -61,7 +61,7 @@ $showForm = $admin && ($editing || basename($_SERVER['SCRIPT_NAME']) === 'alta.p
 ?>
 <!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Productos y existencias · Florería</title><link rel="stylesheet" href="../css/usuarios.css?v=<?= filemtime(__DIR__ . '/../css/usuarios.css') ?>"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__ . '/../css/catalogo.css') ?>"></head>
 <body><main class="catalog-page">
-<a class="back-link" href="<?= $showForm ? 'consulta.php' : '../menu.php' ?>">← <?= $showForm ? 'Volver al catálogo' : 'Volver al menú' ?></a>
+<a class="back-link" href="<?= $showForm ? 'consulta.php' : '../menu.php' ?>"><?= $showForm ? 'Volver al catálogo' : 'Volver al menú' ?></a>
 <header class="catalog-header"><div><span class="eyebrow">FLORERÍA / INVENTARIO</span><h1>Productos y existencias<span class="title-dot">.</span></h1><p>Todo lo que necesitas para dar vida a cada arreglo.</p></div><span class="header-note">Flores · Arreglos · Bases · Accesorios</span></header>
 <?php if (isset($_GET['guardado'])): ?><p class="notice notice-success" role="status">Producto guardado correctamente.</p><?php endif; ?>
 <?php if (isset($_GET['eliminado'])): ?><p class="notice notice-success" role="status">Producto eliminado del catálogo. Su historial de ventas se conserva.</p><?php endif; ?>
@@ -81,9 +81,9 @@ $showForm = $admin && ($editing || basename($_SERVER['SCRIPT_NAME']) === 'alta.p
 <h2><?= $editing ? 'Un detalle hace la diferencia.' : 'Un nuevo detalle para tu florería.' ?></h2>
 <p>Organiza cada flor y cada material desde su primera entrada al catálogo.</p>
 <nav class="section-nav" aria-label="Secciones del formulario">
-<a href="#identidad">Identidad del producto <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 13L13 3M4 3H13V12" stroke="currentColor" stroke-width="1.4"/></svg></a>
-<a href="#existencias">Existencias y precio <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 13L13 3M4 3H13V12" stroke="currentColor" stroke-width="1.4"/></svg></a>
-<a href="#detalles">Detalles adicionales <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 13L13 3M4 3H13V12" stroke="currentColor" stroke-width="1.4"/></svg></a>
+<a href="#identidad">Identidad del producto</a>
+<a href="#existencias">Existencias y precio</a>
+<a href="#detalles">Detalles adicionales</a>
 </nav>
 </aside>
 <form method="post" class="product-form">
@@ -109,7 +109,7 @@ function catalogSelect($key, $label, $options, $editing) { ?>
 <p class="field-note">Solo para arreglos: preparados, por encargo o ambas formas.</p>
 <div class="field"><label for="observaciones">Observaciones <span class="optional">/ opcional</span></label><textarea id="observaciones" name="observaciones" maxlength="500" rows="2" placeholder="Color, tamaño, cuidados o algún detalle especial…"><?= esc($editing['observaciones'] ?? '') ?></textarea></div>
 </fieldset>
-<div class="form-actions"><a class="back-link" href="consulta.php">Cancelar</a><button>Guardar producto <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 13L13 3M4 3H13V12" stroke="currentColor" stroke-width="1.4"/></svg></button></div>
+<div class="form-actions"><a class="back-link" href="consulta.php">Cancelar</a><button>Guardar producto</button></div>
 </form></section>
 <?php endif; ?>
 <?php if (!$showForm): ?>

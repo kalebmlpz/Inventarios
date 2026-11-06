@@ -4,8 +4,9 @@
 .catalog-page a:hover,
 .catalog-page a:visited { text-decoration: none; }
 .back-link, .back-link:hover { color: #292823; }
-.catalog-page > .back-link { padding: 8px 0; }
-.catalog-page > .back-link:hover { opacity: .7; }
+.catalog-page > .back-link,
+.catalog-page > .back-link:visited { min-height: 48px; padding: 12px 20px; border-radius: 6px; background: #1a1a1a; color: #fff; justify-content: center; }
+.catalog-page > .back-link:hover { background: #343a40; color: #fff; }
 .catalog-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin: 12px 0 32px; }
 .eyebrow { font-size: 10px; letter-spacing: 1.8px; font-weight: 700; color: #756952; }
 .catalog-header h1 { font-family: Georgia, serif; font-size: clamp(30px, 4vw, 44px); font-weight: 400; letter-spacing: -1.7px; margin: 10px 0; }
@@ -37,7 +38,7 @@ textarea { width: 100%; padding: 12px; font: inherit; font-size: 13px; resize: v
 .field-note { clear: both; font-size: 11px; color: #817a6b; margin: 10px 0 16px; line-height: 1.6; }
 .optional { font-size: 11px; color: #958d7e; font-weight: 400; }
 .form-actions { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding-top: 22px; }
-.form-actions button { width: 205px; border-radius: 6px; }
+.form-actions button { width: auto; border-radius: 6px; justify-content: center; }
 .form-actions a { margin: 0; font-size: 12px; }
 button { background: #1a1a1a; }
 button:hover, .action:hover { background: #343a40; }
@@ -62,7 +63,6 @@ tbody tr:hover { background: #faf8f2; }
 @media (max-width: 900px) { .header-note { display: none; } .product-editor { grid-template-columns: 220px minmax(0, 1fr); } .editor-aside { padding: 28px 20px; } .product-form { padding: 28px 24px; } }
 @media (max-width: 650px) { .catalog-page { padding: 24px 16px; } .product-editor { grid-template-columns: 1fr; } .editor-aside { display: none; } .stock-grid { grid-template-columns: 1fr; } .form-grid { grid-template-columns: 1fr; } .form-actions { gap: 16px; } .form-actions button { width: auto; gap: 16px; } .catalog-header h1 { letter-spacing: -1px; } .list-heading { align-items: flex-start; flex-direction: column; } }
 
-.section-nav a svg { margin-left: auto; flex-shrink: 0; }
 
 .row-actions { display: flex; align-items: center; gap: 8px; }
 .row-actions form { margin: 0; }
