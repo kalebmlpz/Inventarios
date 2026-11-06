@@ -1,0 +1,86 @@
+@import url(https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600&display=swap);
+  @import url(https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@800&display=swap);
+
+:root {
+    font-family: "Nunito Sans";
+    --principal-color: #1a1a1a;
+    --secondary-color: #fff;
+    --gray: #919aa1;
+    --gray-2: #9a9a9a;
+    --light-gray: #eceeef;
+    --dark-gray: #55595c;
+    --darker-gray: #343a40;
+}
+
+.container {
+    padding-bottom: 0px;
+    /* max-width: 100%; */
+}
+
+.selection {
+    margin: 0 auto;
+    /* width: 80%; */
+    height: 80vh;
+
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    grid-column-gap: 1em;
+}
+
+.selection-element {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* background-color: var(--principal-color); */
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    transition: all 100ms;
+}
+
+.selection-element > div {
+    width: 150px;
+
+    text-align: center;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 5px black;
+    font-weight: 800;
+    font-size: 20px;
+    user-select: none;
+}
+
+.selection-element:hover {
+    transform: scale(102%);
+}
+
+.biografia {
+    background-image: url("../img/bio.jpg");
+}
+
+.pasatiempos {
+    background-image: url("../img/pasatiempos.jpg");
+}
+
+.indice {
+    background-image: url("../img/indice.jpg");
+}
+
+@media only screen and (max-width: 600px) {
+    .selection {
+        margin: 0 auto;
+        /* width: 80%; */
+        height: 80vh;
+    
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(3fr, auto);
+        grid-row-gap: 1em;
+    
+    }
+
+    .selection-element:hover {
+        transform: scale(105%);
+    }
+}

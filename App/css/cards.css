@@ -1,0 +1,91 @@
+:root {
+    --principal-color: #1a1a1a;
+    --secondary-color: #fff;
+    --gray: #919aa1;
+    --light-gray: #eceeef;
+    --dark-gray: #55595c;
+    --darker-gray: #343a40;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 200px);
+    grid-column-gap: 1em;
+    grid-row-gap: 1em;
+    
+    /* background-color: yellow; */
+}
+
+.card {
+    width: auto;
+    height: 278px;
+
+    color: var(--darker-gray);
+
+    background-color: var(--secondary-color);
+    border-radius: 3px;
+    border: 1px solid var(--gray);
+}
+
+.card-header {
+    padding: 5px;
+    
+    text-align: center;
+    text-transform: uppercase;
+
+    background-color: var(--light-gray);
+    border-radius: 3px 3px 0 0;
+    border-bottom: 1px  solid var(--gray);
+}
+
+.card-body {
+    padding: 10px;
+}
+
+.card-title {
+    padding-bottom: 5px;
+
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.card-text {
+    height: 150px;
+    
+    color: var(--dark-gray);
+    font-weight: 100;
+    overflow-y: scroll;
+}
+
+.card-text::-webkit-scrollbar {
+    width: 7px;
+
+    overflow-x: hidden;
+
+    background-color: var(--darker-gray);
+}
+  
+.card-text::-webkit-scrollbar-track {
+    background: white;
+}
+  
+.card-text::-webkit-scrollbar-thumb {
+    background: var(--gray);
+}
+
+.button-container {
+    display: flex;
+    justify-content:space-evenly;
+}
+
+@media only screen and (max-width: 520px) {
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, auto));
+        grid-column-gap: 1em;
+        grid-row-gap: 1em;
+    }
+}

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>ALTA</title>
+
+        <!-- CDN de Boostrap -->
+        <link rel="stylesheet" href="./bootstrap/bootstrap.min.css">
+        <link rel="stylesheet" href="./css/styles.css">
+    </head>
+
+    <body>
+        <div class="text-center mt-5">
+            <h1 class="h1">Punto de venta</h1>
+        </div>
+        <!-- Navegación -->
+        <nav class="navbar">
+            <div class="container">
+                <button type="button" class="btn btn-success w-22 p-0"><a class="nav-link p-3" href="./alta.html">ALTA</a></button>
+                <button type="button" class="btn btn-danger w-22 p-0"><a class="nav-link p-3" href="./baja.html">BAJA</a></button>
+                <button type="button" class="btn btn-warning w-22 p-0"><a class="nav-link p-3" href="./cambio.html">CAMBIO</a></button>
+                <button type="button" class="btn btn-info w-22 p-0"><a class="nav-link p-3" href="./consulta.html">CONSULTA</a></button>
+                <button type="button" class="btn w-12 p-0"><a class="nav-link p-3" href="../menu.html">&LongLeftArrow;</a></button>
+            </div>
+        </nav>
+
+        <div class="container-sm">
+            <!-- Aplicación -->
+            <div id="App" class="row pt-5 card">
+                <div>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h4 class="text-center">Agregar Artículo</h4>
+                        </div>
+
+                        <form id="formulario-articulos" class="card-body d-grid gap-2">
+
+                            <div class="form-group">
+                                <input type="number" id="sku" placeholder="SKU" class="form-control mb-2" min="0" max="999999">
+                                <div id="error-duplicado" class="invalid-feedback" hidden>El código ya existe en la base de datos</div>
+                                <div id="error-digitos" class="invalid-feedback" hidden>El código debe ser igual o menor a 6 dígitos</div>
+                            </div>
+
+                            <div class="form-group">
+                                <input type="text" id="nombre" placeholder="Artículo" class="form-control mb-2" disabled maxlength="15">
+                            </div>
+
+                            <div class="form-group">
+                                <input type="text" id="marca" placeholder="Marca" class="form-control mb-2" disabled maxlength="15">
+                            </div>
+
+                            <div class="form-group">
+                                <input type="text" id="modelo" placeholder="Modelo" class="form-control mb-2" disabled maxlength="20">
+                            </div>
+
+                            <div class="form-group">
+                                <select id="departamento" class="form-control mb-2" disabled>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <select id="clase" class="form-control mb-2 text-body" disabled>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <select id="familia" class="form-control mb-2" disabled>
+                                </select>
+                            </div>
+
+                            <div class="form-group input-group">
+                                <input type="number" id="stock" placeholder="Stock" class="form-control mb-2" disabled min="0" max="999999999">
+                                <input type="number" id="cantidad" placeholder="Cantidad" class="form-control mb-2" disabled  min="0" max="999999999">
+                                
+                                <div id="error-en-cantidad" class="invalid-feedback">La cantidad debe ser menor al stock</div>
+                                <div id="error-en-stock" class="invalid-feedback">El stock debe ser igual o menor a 9 dígitos</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-form-label">Fecha Alta</label>
+                                <input type="text" id="fecha-alta" value="" readonly class="form-control mb-2" disabled>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-form-label">Fecha Baja</label>
+                                <input type="text" id="fecha-baja" value="1900-01-01" readonly class="form-control mb-2 col-sm-4" disabled>
+                            </div>
+
+                            <div class="form-group m-3">
+                                <input class="form-check-input" type="checkbox" value="0" id="descontinuado" disabled>
+                                <label class="form-check-label" for="flexCheckChecked">Descontinuado</label>
+                            </div>
+
+                            <input type="submit" value="Guardar" class="btn btn-primary mt-2">
+
+                        </form>
+                    </div>
+                </div> 
+        </div>
+
+        <!-- Sripts -->
+        <script src="./js/validacion.js"></script>
+        <script src="./js/app.js"></script>
+        <script src="./js/alta.js"></script>
+    </body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Iniciar sesión</title>
+
+        <link rel="stylesheet" href="./css/bootstrap.min.css">
+        <link rel="stylesheet" href="./css/styles.css">
+        <link rel="stylesheet" href="./css/login.css">
+    </head>
+    <body>
+        <div class="display-center">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="text-center">Inicio de sesión</h4>
+                </div>
+                <!-- <h2 class="text-primary text-center">Inicio de sesión</h1> -->
+                <div class="login-box">
+                    <form id="loginForm" action="login.php" method="post">
+                        <label for="username">Nombre de usuario</label>
+                        <input type="text" id="username" name="username" required>
+                    
+                        <label for="password">Contraseña</label>
+                        <input type="password" id="password" name="password" required>
+                    
+                        <input type="submit" value="Iniciar sesión">
+                        <!-- <a href="./menu.html">Saltar</a> -->
+                    </form>
+                </div>
+            </div>
+        </div>
+        <script src="./js/login.js"></script>
+    </body>
+</html>

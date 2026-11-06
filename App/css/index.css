@@ -1,0 +1,30 @@
+@import url(https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600&display=swap);
+
+:root {
+    font-family: "Nunito Sans";
+    --principal-color: #1a1a1a;
+    --secondary-color: #fff;
+    --gray: #919aa1;
+    --light-gray: #eceeef;
+    --dark-gray: #55595c;
+    --darker-gray: #343a40;
+}
+
+.img {
+    width: 250px;
+    height: 250px;
+    
+    background: url("../img/fotoP.jpg") no-repeat center center;
+    background-size: cover;
+}
+
+#personal-data {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 250px);
+    grid-column-gap: 1em;
+    grid-row-gap: 1em;
+}
+
+#data {
+    font-size: 1rem;
+}

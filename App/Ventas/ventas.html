@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>Vender</title>
+
+        <!-- CDN de Boostrap -->
+        <link rel="stylesheet" href="./bootstrap/bootstrap.min.css">
+        <link rel="stylesheet" href="./css/ventas.css">
+    </head>
+
+    <body>
+        <div class="text-center mt-5">
+            <h1 class="h1">Punto de venta</h1>
+        </div>
+
+        <div class="container-flex box">
+        
+            <div class="venta">
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4 class="text-center">Vender artículo</h4>
+                    </div>
+
+                    <form id="formulario-articulos" class="card-body d-grid gap-2">
+
+                        <div class="form-group">
+                            <input type="number" id="sku" placeholder="SKU" class="form-control mb-2">
+                            <input type="number" id="cantidad" placeholder="Cantidad" class="form-control mb-2" min="1" max="999">
+                        </div>
+
+                        <input type="submit" value="Agregar al carrito" class="btn btn-primary mt-2">
+
+                    </form>
+                </div>
+
+                <button type="button" class="btn back p-0"><a class="nav-link p-3 w-100" href="../menu.html">Volver al menú</a></button>
+
+
+            </div>
+
+            <div class="lista">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4 class="text-center">Lista de artículos</h4>
+                    </div>
+
+                    <div id="articulos">
+                    </div>
+                    <a id="finalizar" href="#" class="btn btn-dark disabled m-2">Finalizar Pedido</a>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Sripts -->
+        <script src="./js/venta.js"></script>
+    </body>
+</html>

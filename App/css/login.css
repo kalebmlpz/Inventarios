@@ -1,0 +1,65 @@
+:root {
+  --principal-color: #1a1a1a;
+  --secondary-color: #fff;
+  --gray: #919aa1;
+  --lighter-gray: #eceeef;
+  --light-gray: #d2d2d2;
+  --dark-gray: #55595c;
+  --darker-gray: #343a40;
+  --green: #4CAF50;
+}
+
+
+.text-center {
+    text-align: center;
+}
+
+.display-center {
+    display: flex;
+    height: 100vh;
+
+    justify-content: center;
+    align-items: center;
+}
+
+.login-box {
+    width: 300px;
+    height: auto;
+
+    /* padding: 40px 20px 30px 20px; */
+    padding: 30px 20px;
+    /* margin: 10px; */
+
+    /* border: 1px solid var(--light-gray); */
+    /* box-shadow: 0px 0px 10 var(--light-gray); */
+
+    /* background-color: var(--light-gray); */
+    /* border-radius: 10px; */
+    /* border: 2px solid var(--gray); */
+}
+
+form > input[type="text"],
+form > input[type="password"] {
+  width: 100%;
+  margin: 10px 0px;
+
+  padding: 10px;
+  margin-bottom: 10px;
+
+  border: 1px solid var(--gray);
+
+  box-sizing: border-box;
+}
+
+form > input[type="submit"] { 
+  width: 100%;
+
+  padding: 10px;
+  margin: 10px 0px 20px 0px;
+
+  color: var(--secondary-color);
+
+  border: none;
+  background-color: var(--principal-color);
+  cursor: pointer;
+}

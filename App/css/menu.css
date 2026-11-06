@@ -1,0 +1,106 @@
+:root {
+    --principal-color: #1a1a1a;
+    --secondary-color: #fff;
+    --gray: #919aa1;
+    --lighter-gray: #eceeef;
+    --light-gray: #d2d2d2;
+    --dark-gray: #55595c;
+    --darker-gray: #343a40;
+    --green: #4CAF50;
+}
+
+a {
+    text-decoration: none;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-menu {
+    margin: 10px 0;
+}
+
+.display-center {
+    display: flex;
+    height: 100vh;
+
+    justify-content: center;
+    align-items: center;
+}
+
+.menu {
+    display: grid;
+    padding: 20px;
+
+    grid-template-columns: repeat(3, 1fr);
+    grid-column-gap: 1em;
+}
+
+.menu-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    height: 150px;
+    width: 150px;
+    
+    color: white;
+
+    background-color: var(--principal-color);
+    transition: all 100ms;
+}
+
+.menu-item:hover {
+    filter: brightness(140%);
+    transform: scale(105%);
+}
+
+.dis-block {
+    display: block;
+}
+
+.texto {
+    text-align: center;
+}
+
+#articulos {
+    height: 100px;
+    width: 100px;
+    margin: 5px auto;
+
+    background-image: url(../img/articulos.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    
+}
+
+#ventas {
+    height: 100px;
+    width: 100px;
+    margin: 5px auto;
+
+    background-image: url(../img/ventas.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+#registros {
+    height: 100px;
+    width: 100px;
+    margin: 5px auto;
+
+    background-image: url(../img/registros.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.box {
+    border: 1px solid var(--light-gray);
+    box-shadow: 0px 0px 10 var(--light-gray);
+}
+
+.cerrar-sesion {
+    margin: 10px 0;
+    color: var(--principal-color);
+}
