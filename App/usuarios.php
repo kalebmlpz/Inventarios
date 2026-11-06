@@ -33,14 +33,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><title>Usuarios</title><link rel="stylesheet" href="./css/bootstrap.min.css"></head>
-<body><main class="container mt-5"><h1>Crear usuario</h1>
-<p>Asigna los permisos del usuario. Los cajeros solo consultan existencias, registran ventas y ven sus propias operaciones.</p>
-<p role="status"><?= htmlspecialchars($message, ENT_QUOTES, 'UTF-8') ?></p>
-<form method="post">
-<input type="hidden" name="csrf" value="<?= $_SESSION['csrf'] ?>">
-<label class="d-block">Nombre de usuario<input class="form-control" name="username" maxlength="50" required autocomplete="off"></label>
-<label class="d-block">Contraseña<input class="form-control" type="password" name="password" minlength="8" required autocomplete="new-password"></label>
-<label class="d-block">Rol<select class="form-control" name="rol"><option>Cajero</option><option>Administrador</option></select></label>
-<button class="btn btn-primary my-3">Crear usuario</button>
-</form><a href="./menu.php">Volver al menú</a></main></body></html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Crear usuario · Inventarios</title>
+    <link rel="stylesheet" href="./css/usuarios.css">
+</head>
+<body>
+<main class="users-page">
+    <a class="back-link" href="./menu.php"><span aria-hidden="true">←</span> Volver al menú</a>
+    <section class="user-card" aria-labelledby="form-title">
+        <div class="card-content">
+            <form method="post" class="user-form">
+                <h1 id="form-title">Crear usuario</h1>
+                <?php if ($message !== ''): ?>
+                <p class="notice <?= $message === 'Usuario creado correctamente.' ? 'notice-success' : 'notice-error' ?>" role="status"><?= htmlspecialchars($message, ENT_QUOTES, 'UTF-8') ?></p>
+                <?php endif; ?>
+                <input type="hidden" name="csrf" value="<?= $_SESSION['csrf'] ?>">
+                <div class="field">
+                    <label for="new-username">Nombre de usuario</label>
+                    <input id="new-username" name="username" maxlength="50" required autocomplete="off" placeholder="Ej. cajero01">
+                    <small>Será el nombre que usará para iniciar sesión.</small>
+                </div>
+                <div class="field">
+                    <label for="new-password">Contraseña</label>
+                    <input id="new-password" type="password" name="password" minlength="8" required autocomplete="new-password" placeholder="Al menos 8 caracteres" aria-describedby="password-hint">
+                    <small id="password-hint">Combina letras, números y símbolos.</small>
+                </div>
+                <div class="field">
+                    <label for="new-role">Rol del usuario</label>
+                    <select id="new-role" name="rol" aria-describedby="role-hint"><option>Cajero</option><option>Administrador</option></select>
+                    <small id="role-hint">Asigna solo los permisos que necesita.</small>
+                </div>
+                <button type="submit">Crear usuario <span aria-hidden="true">→</span></button>
+            </form>
+
+        </div>
+    </section>
+</main>
+</body>
+</html>

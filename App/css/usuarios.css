@@ -1,0 +1,52 @@
+:root {
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #202727;
+    background: #f3f5f4;
+    font-synthesis: none;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+.users-page { width: min(480px, 100%); margin: 0 auto; padding: 40px 24px; }
+.back-link { display: inline-flex; gap: 10px; align-items: center; margin-bottom: 24px; color: #485451; text-decoration: none; font-size: 14px; font-weight: 600; }
+.back-link:hover { color: #14634e; text-decoration: underline; }
+.user-card { background: white; border: 1px solid #dde3df; border-radius: 18px; overflow: hidden; box-shadow: 0 12px 36px #20372a09; }
+.card-header { padding: 32px 36px; border-bottom: 1px solid #e7ebe8; }
+.section-label { color: #437060; font-size: 11px; font-weight: 700; letter-spacing: 1.7px; }
+h1 { font-size: clamp(25px, 4vw, 32px); margin: 12px 0; font-weight: 650; letter-spacing: -.7px; line-height: 1.2; }
+p { line-height: 1.65; }
+.card-header p { margin: 0; color: #69746f; font-size: 14px; }
+.card-content { display: grid; grid-template-columns: 1fr; }
+.user-form { padding: 32px 36px 36px; }
+h2 { margin: 0 0 24px; font-size: 19px; font-weight: 650; }
+.field { margin-bottom: 22px; }
+label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+input, select { width: 100%; min-height: 46px; border: 1px solid #ced8d1; border-radius: 8px; padding: 11px 12px; background: white; color: #202727; font: inherit; font-size: 14px; }
+input::placeholder { color: #818b85; }
+input:focus, select:focus { border-color: #24785e; outline: 3px solid #24785e20; }
+small { display: block; margin-top: 7px; color: #68766e; font-size: 12px; line-height: 1.5; }
+button { display: flex; width: 100%; align-items: center; justify-content: space-between; min-height: 48px; border: 0; border-radius: 8px; padding: 12px 18px; background: #1b2823; color: white; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+button:hover { background: #285640; }
+button:focus-visible, .back-link:focus-visible { outline: 3px solid #378c69; outline-offset: 4px; }
+.role-guide { margin: 24px 24px 24px 0; border-radius: 12px; padding: 28px; background: #f1f6f2; border: 1px solid #e2eae3; }
+.guide-icon { display: grid; place-items: center; width: 40px; height: 40px; margin-bottom: 18px; border-radius: 10px; background: #dfece1; color: #326345; font-size: 28px; }
+.role-guide h2 { margin-bottom: 10px; }
+.role-guide p, .role-guide li { color: #526459; font-size: 13px; }
+.role-guide > p { margin: 0 0 24px; }
+.role-summary + .role-summary { margin-top: 24px; padding-top: 20px; border-top: 1px solid #d7e2d8; }
+h3 { margin: 0 0 10px; font-size: 14px; }
+.role-summary ul { margin: 0; padding-left: 18px; }
+.role-summary li { padding: 4px 0; line-height: 1.5; }
+.role-summary p { margin: 0; }
+.role-guide .guide-note { margin: 24px 0 0; font-size: 12px; }
+.page-footer { color: #78867d; text-align: center; font-size: 12px; margin-top: 24px; }
+.notice { padding: 12px; font-size: 14px; border-radius: 8px; }
+.notice-success { color: #185d36; background: #eaf6ee; border: 1px solid #bbdec6; }
+.notice-error { color: #932e2e; background: #fff0f0; border: 1px solid #efcccc; }
+@media (max-width: 700px) {
+    .users-page { padding: 24px 16px; }
+    .card-content { grid-template-columns: 1fr; }
+    .card-header, .user-form { padding: 26px 24px; }
+    .role-guide { margin: 0 16px 16px; padding: 24px; }
+}
+
+.user-form h1 { margin: 0 0 24px; font-size: 20px; letter-spacing: 0; }
