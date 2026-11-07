@@ -11,12 +11,12 @@ async function cargarRegistros() {
         alert('Por favor, seleccione una fecha')
         return
     }
-    tabla.innerHTML = '<thead><tr><th>SKU</th><th>Nombre</th><th>Cantidad</th><th>Tipo</th><th>Responsable</th><th>Detalle</th></tr></thead><tbody></tbody>'
+    tabla.innerHTML = '<thead><tr><th>SKU</th><th>Nombre</th><th>Cantidad</th><th>Tipo</th><th>Responsable</th><th>Motivo</th><th>Detalle</th></tr></thead><tbody></tbody>'
     const tbody = tabla.querySelector('tbody')
     function mensaje(texto) {
         tbody.replaceChildren()
         const td = document.createElement('td')
-        td.colSpan = 6
+        td.colSpan = 7
         td.textContent = texto
         const tr = document.createElement('tr')
         tr.appendChild(td)
@@ -32,7 +32,7 @@ async function cargarRegistros() {
         if (registros.length === 0) mensaje('No hay movimientos registrados para esta fecha.')
         for (const registro of registros) {
             const tr = document.createElement('tr')
-            for (const valor of [registro.sku, registro.nombre ?? 'Artículo eliminado del catálogo', registro.cantidad, registro.tipo + (registro.modo ? ' · ' + registro.modo : ''), registro.responsable ?? 'Sin autor registrado']) {
+            for (const valor of [registro.sku, registro.nombre ?? 'Artículo eliminado del catálogo', registro.cantidad, registro.tipo + (registro.modo ? ' · ' + registro.modo : ''), registro.responsable ?? 'Sin autor registrado', registro.motivo || '—']) {
                 const td = document.createElement('td')
                 td.textContent = valor
                 tr.appendChild(td)

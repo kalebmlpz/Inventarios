@@ -270,3 +270,10 @@ CREATE TABLE movimientos (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 UPDATE articulo SET modalidad='Preparado' WHERE categoria='Arreglos' AND modalidad='Individual';
+
+-- Ejecutar UNA VEZ después de 004_componentes_existencias.sql, con respaldo previo.
+-- Conserva los productos y movimientos existentes.
+
+ALTER TABLE registros
+ ADD motivo varchar(500) DEFAULT NULL,
+ ADD solicitud_hash char(64) DEFAULT NULL;

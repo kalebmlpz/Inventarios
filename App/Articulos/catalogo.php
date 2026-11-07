@@ -6,10 +6,6 @@ require_once __DIR__ . '/../backend/inventario.php';
 $conn = inventoryDb();
 if (empty($_SESSION['csrf'])) $_SESSION['csrf'] = bin2hex(random_bytes(32));
 function esc($value) { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); }
-function stockUnit($quantity, $unit) {
-    $units = ['Pieza' => ['pieza', 'piezas'], 'Tallo' => ['tallo', 'tallos'], 'Ramo' => ['ramo', 'ramos'], 'Paquete' => ['paquete', 'paquetes']];
-    return isset($units[$unit]) ? $units[$unit][(int)$quantity === 1 ? 0 : 1] : $unit;
-}
 $categorias = ['Flores', 'Arreglos', 'Bases', 'Accesorios', 'Sin clasificar'];
 $unidades = ['Pieza', 'Tallo', 'Ramo', 'Paquete'];
 $modalidades = ['Individual', 'Preparado', 'Por encargo', 'Ambas'];
@@ -40,7 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = filter_var($_POST['id'] ?? 0, FILTER_VALIDATE_INT);
             if ($id === false || $id < 0) throw new DomainException('Producto inválido.');
             $previous = $id ? inventoryProduct($conn, $id) : null;
-            if ($values['categoria'] === 'Arreglos' && (int)$values['stock'] !== (int)($previous['stock'] ?? 0)) throw new DomainException('Usa Preparar arreglos para aumentar sus unidades disponibles.');
+            if ($previous && (int)$values['stock'] !== (int)$previous['stock']) throw new DomainException('Las existencias cambiaron o intentaste editarlas. Recarga la página y usa Registrar entrada o Registrar merma.');
+            if (!$previous && $values['categoria'] === 'Arreglos' && (int)$values['stock'] !== 0) throw new DomainException('Usa Preparar arreglos para aumentar sus unidades disponibles.');
             $ref = $conn->prepare('SELECT COUNT(*) FROM componentes WHERE componente_id=?');
             $ref->execute([$id]);
             if ($values['categoria'] === 'Arreglos' && $ref->fetchColumn() > 0) throw new DomainException('Este material se usa en un arreglo; retíralo de sus componentes antes de cambiar su categoría.');
@@ -88,6 +85,7 @@ $showForm = $admin && ($editing || basename($_SERVER['SCRIPT_NAME']) === 'alta.p
 <header class="catalog-header"><div><span class="eyebrow">FLORERÍA / INVENTARIO</span><h1>Productos y existencias<span class="title-dot">.</span></h1><p>Todo lo que necesitas para dar vida a cada arreglo.</p></div><span class="header-note">Flores · Arreglos · Bases · Accesorios</span></header>
 <?php if (isset($_GET['guardado'])): ?><p class="notice notice-success" role="status">Producto guardado correctamente.</p><?php endif; ?>
 <?php if (isset($_GET['eliminado'])): ?><p class="notice notice-success" role="status">Producto eliminado del catálogo. Su historial de ventas se conserva.</p><?php endif; ?>
+<?php if (isset($_SESSION['stock_movement_message'])): ?><p class="notice notice-success" role="status"><?= esc($_SESSION['stock_movement_message']) ?></p><?php unset($_SESSION['stock_movement_message']); endif; ?>
 <?php if ($message): ?><p class="notice notice-error" role="alert"><?= esc($message) ?></p><?php endif; ?>
 <?php if ($showForm): ?>
 <section class="product-editor">
@@ -122,7 +120,7 @@ function catalogSelect($key, $label, $options, $editing) { ?>
 </div></fieldset>
 <fieldset id="existencias"><legend>Existencias y precio</legend><div class="form-grid stock-grid">
 <?php catalogInput('stock','Disponibles','number',0,$editing); catalogInput('stock_minimo','Stock mínimo','number',0,$editing); catalogInput('precio','Precio por unidad','number',0,$editing); ?>
-</div><p class="field-note">Para materiales, editar la cantidad registra un ajuste. Para arreglos, usa Componentes / Preparar.</p></fieldset>
+</div><p class="field-note">Las cantidades iniciales se indican al crear el material. Después, usa Registrar entrada o Registrar merma; para arreglos, Componentes / Preparar.</p></fieldset>
 <fieldset id="detalles"><legend>Información adicional</legend>
 <div id="arreglo-options">
 <?php catalogSelect('modalidad','Modalidad del arreglo',$modalidades,$editing); ?>
@@ -135,7 +133,7 @@ function catalogSelect($key, $label, $options, $editing) { ?>
 <script src="./js/catalogo.js?v=<?= filemtime(__DIR__ . '/js/catalogo.js') ?>" defer></script>
 <?php endif; ?>
 <?php if (!$showForm): ?>
-<section class="user-card catalog-list"><div class="list-heading"><div><h2>Catálogo</h2></div><?php if ($admin): ?><a class="action" href="alta.php">+ Nuevo producto</a><?php endif; ?></div><form class="search" method="get"><label for="q">Buscar producto</label><div><input id="q" name="q" value="<?= esc($q) ?>" placeholder="Nombre o código"><button>Buscar</button></div></form>
+<section class="user-card catalog-list"><div class="list-heading"><div><h2>Catálogo</h2></div><?php if ($admin): ?><div class="catalog-actions"><a class="action" href="alta.php">Nuevo producto</a><a class="action" href="movimiento.php?tipo=entrada">Registrar entrada</a><a class="action" href="movimiento.php?tipo=merma">Registrar merma</a></div><?php endif; ?></div><form class="search" method="get"><label for="q">Buscar producto</label><div><input id="q" name="q" value="<?= esc($q) ?>" placeholder="Nombre o código"><button>Buscar</button></div></form>
 <div class="table-wrap"><table><thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Existencias</th><th>Mínimo</th><th>Precio</th><th>Modalidad</th><?php if ($admin): ?><th>Acciones</th><?php endif; ?></tr></thead><tbody>
 <?php foreach ($productos as $producto): ?><tr><td><?= esc($producto['sku']) ?></td><td><strong><?= esc($producto['nombre']) ?></strong><?php if ($producto['observaciones']): ?><small><?= esc($producto['observaciones']) ?></small><?php endif; ?></td><td><?= esc($producto['categoria']) ?></td><td><span class="<?= $producto['stock'] <= $producto['stock_minimo'] ? 'low-stock' : '' ?>"><?= esc($producto['stock']) ?> <?= esc(stockUnit($producto['stock'], $producto['unidad'])) ?></span></td><td><?= esc($producto['stock_minimo']) ?></td><td><?= number_format((float)$producto['precio'], 2) ?></td><td><?= esc($producto['modalidad']) ?></td><?php if ($admin): ?><td><div class="row-actions"><a class="edit-link" href="consulta.php?editar=<?= (int)$producto['id_articulo'] ?>">Editar</a><?php if ($producto['categoria'] === 'Arreglos'): ?><a class="edit-link" href="componentes.php?id=<?= (int)$producto['id_articulo'] ?>">Componentes / Preparar</a><?php endif; ?><form method="post" action="../backend/eliminar_producto.php" onsubmit="return confirm('¿Eliminar definitivamente este producto y sus existencias del catálogo? Esta acción no se puede deshacer. El historial de ventas se conserva.')"><input type="hidden" name="csrf" value="<?= esc($_SESSION['csrf']) ?>"><input type="hidden" name="id" value="<?= (int)$producto['id_articulo'] ?>"><button class="delete-product" aria-label="Eliminar <?= esc($producto['nombre']) ?>">Eliminar</button></form></div></td><?php endif; ?></tr><?php endforeach; ?>
 <?php if (!$productos): ?><tr><td colspan="8">No se encontraron productos.</td></tr><?php endif; ?>

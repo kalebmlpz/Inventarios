@@ -26,7 +26,7 @@ La modalidad identifica arreglos preparados, por encargo o ambas formas. Antes d
 1. Exporta un respaldo de `punto_de_venta` en phpMyAdmin.
 2. Actualiza los archivos con Git y aplica **una sola vez** `App/migrations/004_componentes_existencias.sql` sobre la base existente, después de la 003. No importes el volcado completo sobre datos existentes. La migración conserva productos y registros y convierte las tablas de stock/historial a InnoDB para operaciones completas y simultáneas.
 3. Cierra sesión y vuelve a entrar. Para una instalación nueva, el volcado completo ya incluye todos los campos y tablas; no apliques migraciones adicionales.
-4. En el catálogo crea materiales individuales (flores, bases o accesorios) con existencias y su unidad. Al editar cantidades se registra un ajuste y su responsable.
+4. En el catálogo crea materiales individuales (flores, bases o accesorios) con existencias y su unidad. La cantidad inicial se registra al crear el material. Los cambios posteriores se registran desde Entrada o Merma; la edición de la ficha no permite sobrescribir el stock.
 5. Crea un producto Arreglos con cero existencias y elige Preparado, Por encargo o Ambas. Las unidades de arreglos se aumentan mediante elaboración, no desde la edición del stock.
 6. Usa **Componentes / Preparar** para elegir materiales y cantidades **por una unidad de arreglo**. No se permiten otros arreglos como materiales, cantidades cero ni materiales repetidos. Guardar componentes no descuenta stock. Modificar la lista cambia futuras elaboraciones; los movimientos anteriores conservan su detalle.
 7. **Preparar arreglos** (solo Administrador) consume materiales y suma unidades listas. Una venta Disponible de ese arreglo descuenta solo la unidad terminada.
@@ -37,3 +37,18 @@ La modalidad identifica arreglos preparados, por encargo o ambas formas. Antes d
 Un material usado en una receta no se puede eliminar sin retirarlo antes de sus componentes. El historial nuevo conserva el nombre y código usados en el momento de la operación, incluso si luego se edita o elimina el producto. El stock se consulta al abrir/buscar cada pantalla y se vuelve a verificar al guardar; no hay actualización automática entre pantallas abiertas.
 
 Validación en el entorno de desarrollo: `python3 tests/roles.py` y `python3 tests/inventario.py`. Usan productos temporales y los eliminan al terminar. La prueba de inventario incluye elaboración, ventas de ambas modalidades, stock insuficiente, recuperación de un reenvío y dos ventas concurrentes de la última unidad.
+
+## Entradas y mermas
+
+Esta etapa requiere la migración **005_entradas_mermas.sql** después de la 004. Exporta un respaldo de `punto_de_venta`, actualiza los archivos e importa la migración **una sola vez** en phpMyAdmin. No importes el volcado completo sobre una base existente. Para instalaciones nuevas, `App/punto_de_venta.sql` ya incluye las tablas y columnas necesarias; no apliques además las migraciones.
+
+En **Productos y existencias**, el Administrador dispone de **Nuevo producto**, **Registrar entrada** y **Registrar merma**. El Cajero no ve ni puede acceder a las dos últimas acciones, incluso escribiendo sus direcciones directamente.
+
+- **Entrada:** selecciona un material existente (flores, bases o accesorios), cantidad entera positiva y motivo Compra, Recepción de mercancía u Otro. Aumenta el stock. Los arreglos se suman desde Componentes / Preparar, para consumir correctamente sus materiales.
+- **Merma:** selecciona el producto (también puede ser un arreglo listo), cantidad y motivo Marchitez, Daño, Desperdicio u Otro. No puede superar las existencias. Perder un arreglo terminado no devuelve sus componentes.
+- **Detalle:** permite agregar una explicación; es obligatorio si el motivo es Otro.
+- Cada operación se fecha al guardarse (hora de Ciudad de México), guarda el Administrador responsable y aparece en Registros con su motivo y el detalle del cambio de stock.
+- Un reenvío de la misma solicitud no registra el movimiento dos veces. Si falta stock o hay un error, no queda un movimiento parcial.
+- La edición de productos permite modificar sus datos, precio y stock mínimo. Las existencias de productos existentes son de solo lectura; usa las acciones de movimiento. Si la cantidad cambió desde que abriste la edición, recarga antes de guardar.
+
+Para probar: crea un material con 10 unidades, registra una entrada de 50 y una merma de 5. Deben quedar 55 y dos movimientos nuevos con sus motivos. Prueba una merma superior a 55: debe rechazarse sin alterar las existencias. `python3 tests/entradas_mermas.py` verifica además permisos, reenvíos, límites y operaciones simultáneas con datos temporales.

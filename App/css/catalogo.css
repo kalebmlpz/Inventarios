@@ -83,3 +83,8 @@ button:disabled { opacity: .5; cursor: default; }
 summary { cursor: pointer; font-weight: 600; }
 details p { font-size: 12px; min-width: 220px; }
 @media(max-width:700px) { .sales-grid { grid-template-columns: 1fr; } }
+.catalog-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+.movement-page { max-width: 850px; }
+.movement-page .product-form > .field, .movement-page .form-grid { margin-bottom: 24px; }
+input[readonly] { background: #f3f0e8; color: #6d665b; }
+@media(max-width:650px) { .catalog-actions { justify-content: flex-start; } }

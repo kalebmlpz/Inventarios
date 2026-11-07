@@ -52,3 +52,8 @@ function consumeRecipe($conn, $product, $quantity, $record) {
         changeStock($conn, $material, -$required, $record);
     }
 }
+
+function stockUnit($quantity, $unit) {
+    $units = ['Pieza' => ['pieza', 'piezas'], 'Tallo' => ['tallo', 'tallos'], 'Ramo' => ['ramo', 'ramos'], 'Paquete' => ['paquete', 'paquetes']];
+    return isset($units[$unit]) ? $units[$unit][(int)$quantity === 1 ? 0 : 1] : $unit;
+}
