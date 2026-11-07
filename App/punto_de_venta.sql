@@ -292,3 +292,14 @@ ALTER TABLE movimientos
  ADD articulo_id int DEFAULT NULL,
  ADD unidad_snapshot varchar(20) DEFAULT NULL,
  ADD categoria_snapshot varchar(30) DEFAULT NULL;
+
+-- Ejecutar UNA VEZ después de 006_cancelaciones_devoluciones.sql, con respaldo previo.
+-- Conserva las cuentas y sus contraseñas; todas las cuentas existentes siguen activas.
+
+ALTER TABLE usuarios ENGINE=InnoDB;
+ALTER TABLE usuarios
+ ADD activo tinyint(1) NOT NULL DEFAULT 1,
+ ADD version_sesion int NOT NULL DEFAULT 0,
+ ADD UNIQUE KEY username_unico (username);
+CREATE TABLE cuentas_lock (id int PRIMARY KEY) ENGINE=InnoDB;
+INSERT INTO cuentas_lock VALUES (1);

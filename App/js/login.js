@@ -14,7 +14,7 @@ document.getElementById('loginForm')
                 if (response.ok && result.message === 'OK') {
                     window.location.href = './menu.php'
                 } else {
-                    alert('Usuario o contraseña incorrectos.')
+                    alert(result.message || 'Usuario o contraseña incorrectos.')
                 }
             })
             .catch(function(error) {
@@ -24,3 +24,9 @@ document.getElementById('loginForm')
     fetchPosts(username, password)
     e.preventDefault()
 })
+if (new URLSearchParams(location.search).get('cuenta') === 'actualizada') {
+    const notice = document.createElement('p')
+    notice.setAttribute('role', 'status')
+    notice.textContent = 'Tu cuenta se actualizó. Inicia sesión nuevamente.'
+    document.getElementById('loginForm').prepend(notice)
+}

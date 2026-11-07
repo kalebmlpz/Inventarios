@@ -11,7 +11,7 @@ El administrador ve todos los registros; el cajero solo los asociados a su usuar
 
 Para una instalación nueva importa `App/punto_de_venta.sql` (compatible con MySQL y MariaDB). Incluye Admin / Admin123 como cuenta inicial; crea las demás cuentas desde el sistema. La migración 002 no se ejecuta en instalaciones nuevas.
 
-La etapa de roles permite crear usuarios y asignar sus permisos. La edición de roles de usuarios existentes sigue pendiente.
+La etapa de roles permite crear usuarios y asignar sus permisos. La etapa de administración de cuentas, descrita al final, agrega edición, activación y desactivación.
 
 ## Catálogo de florería (primera etapa)
 
@@ -96,3 +96,22 @@ Las cantidades se mantienen por producto y unidad. Un cambio de unidad en la fic
 Estos reportes muestran cantidades, no importes monetarios ni ganancias: las ventas actuales todavía no guardan precios históricos. No debe multiplicarse una venta antigua por el precio actual del catálogo.
 
 Validación: `python3 tests/reportes.py` comprueba fechas, ventas corregidas, unidades, consumo, mermas, permisos y CSV. Las pruebas usan datos temporales y los limpian al terminar.
+
+## Administración de cuentas
+
+1. Exporta un respaldo de la base `punto_de_venta`.
+2. Actualiza los archivos y aplica **una sola vez** `App/migrations/007_administracion_cuentas.sql` después de la 006. Conserva cuentas, roles y contraseñas y mantiene activas las cuentas existentes. Agrega control de estado y sesiones, y un índice para impedir nombres duplicados. Si había nombres duplicados creados manualmente, resuélvelos antes de aplicar el índice; no elimines cuentas con historial.
+3. Cierra sesión y vuelve a iniciar: las sesiones anteriores a esta actualización ya no son válidas. Las instalaciones nuevas incluyen las columnas en el volcado completo y no requieren migraciones adicionales.
+
+Desde **Administrar usuarios**, el Administrador ve la lista, busca por nombre y crea o edita cuentas. Los Cajeros no tienen acceso, incluso por dirección directa.
+
+- **Editar:** cambia el nombre y el rol. Abre Cambiar contraseña solo si necesitas restablecerla: escribe la nueva y repítela. Si dejas ambos campos vacíos, se conserva la actual. Las contraseñas nuevas se guardan con hash; no se muestran las actuales.
+- **Desactivar:** bloquea nuevos inicios de sesión e invalida las sesiones existentes en su próxima solicitud. Conserva ventas, movimientos y el identificador del usuario. No se ofrece borrar cuentas.
+- **Activar:** permite volver a iniciar sesión. No revive sesiones de antes de la desactivación.
+- Guardar cambios de una cuenta invalida sus sesiones anteriores. Si editas tu propia cuenta, vuelves al login con un mensaje y debes usar los datos nuevos.
+- No puedes desactivar tu propia cuenta ni quitar el último Administrador activo. La comprobación se realiza también ante cambios simultáneos; no basta con ocultar botones.
+- Si otra persona modificó la cuenta desde que la abriste, recarga antes de volver a guardar para no sobrescribir sus cambios.
+
+Las credenciales iniciales existentes siguen funcionando. El login conserva compatibilidad con las contraseñas antiguas y actualiza su almacenamiento cuando corresponde; un hash guardado no sirve como contraseña para iniciar sesión.
+
+Validación: `python3 tests/cuentas.py` prueba edición, contraseñas, sesiones, activación, permisos y solicitudes simultáneas. Las pruebas del último Administrador se ejecutan en una base temporal aislada, sin cambiar el rol ni el estado de la cuenta real Admin.
