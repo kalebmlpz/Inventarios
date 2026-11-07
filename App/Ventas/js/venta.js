@@ -18,7 +18,27 @@ function unitLabel(quantity, unit) {
     const names = {Pieza:['pieza','piezas'],Tallo:['tallo','tallos'],Ramo:['ramo','ramos'],Paquete:['paquete','paquetes']}
     return names[unit] ? names[unit][Number(quantity) === 1 ? 0 : 1] : unit
 }
-function hasPrice(item) { return Number.isInteger(item.producto_id) && item.producto_id > 0 && typeof item.precio_confirmado === 'string' && money.cents(item.precio_confirmado) !== null }
+function hasPrice(item) { return item.revisar_precio !== true && Number.isInteger(item.producto_id) && item.producto_id > 0 && typeof item.precio_confirmado === 'string' && /^\d{1,8}\.\d{2}$/.test(item.precio_confirmado) && money.cents(item.precio_confirmado) !== null }
+function actionIcon(kind) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svg.setAttribute('viewBox', '0 0 24 24')
+    svg.setAttribute('fill', 'none')
+    svg.setAttribute('stroke', 'currentColor')
+    svg.setAttribute('stroke-width', '1.7')
+    svg.setAttribute('stroke-linecap', 'round')
+    svg.setAttribute('stroke-linejoin', 'round')
+    svg.setAttribute('aria-hidden', 'true')
+    svg.setAttribute('focusable', 'false')
+    const paths = kind === 'refresh'
+        ? ['M3 12a9 9 0 0 1 15-6.7L21 8', 'M21 3v5h-5', 'M21 12a9 9 0 0 1-15 6.7L3 16', 'M8 16H3v5']
+        : ['M3 6h18', 'M9 6V4h6v2', 'M5 6l1 15h12l1-15', 'M10 10v7', 'M14 10v7']
+    for (const d of paths) {
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+        path.setAttribute('d', d)
+        svg.appendChild(path)
+    }
+    return svg
+}
 function render() {
     card.replaceChildren()
     let total = 0n
@@ -47,12 +67,17 @@ function render() {
         const actions = document.createElement('div')
         actions.className = 'sale-line-actions'
         const refresh = document.createElement('button')
-        refresh.type = 'button'; refresh.textContent = 'Actualizar precio'; refresh.disabled = busy || updatingPrice
+        refresh.type = 'button'; refresh.title = 'Actualizar precio'; refresh.disabled = busy || updatingPrice
+        refresh.setAttribute('aria-label', 'Actualizar precio de ' + item.nombre)
+        refresh.appendChild(actionIcon('refresh'))
         refresh.addEventListener('click', () => refreshPrice(item))
         const remove = document.createElement('button')
-        remove.type = 'button'; remove.textContent = 'Quitar'; remove.disabled = busy || updatingPrice
+        remove.type = 'button'; remove.title = 'Quitar producto'; remove.disabled = busy || updatingPrice
+        remove.setAttribute('aria-label', 'Quitar producto ' + item.nombre)
+        remove.appendChild(actionIcon('remove'))
         remove.addEventListener('click', () => { pending = pending.filter(p => p !== item); render() })
-        actions.append(refresh, remove)
+        if (!priced) actions.appendChild(refresh)
+        actions.appendChild(remove)
         row.append(description, actions); card.append(row)
     }
     totalLabel.textContent = pending.length ? (missingPrice ? 'Confirma los precios pendientes para ver el total.' : `Total estimado: ${money.amount(money.decimal(total))}`) : ''
@@ -70,6 +95,7 @@ async function refreshPrice(item) {
         item.precio_confirmado = money.decimal(money.cents(String(product.precio)))
         item.nombre = product.nombre
         item.producto_id = Number(product.id_articulo)
+        item.revisar_precio = false
         status.textContent = 'Precio actualizado. Revisa el total antes de confirmar.'
     } catch (error) { status.textContent = error.message }
     finally { updatingPrice = false; render() }
@@ -124,7 +150,10 @@ finish.addEventListener('click', async () => {
             const item = pending[0]
             const res = await fetch('../backend/venta.php', {method:'POST',body:new URLSearchParams({...item,csrf:document.getElementById('csrf').value})})
             const result = await res.json()
-            if (!res.ok || result.message !== 'OK') throw new Error(result.message || 'No se pudo guardar.')
+            if (!res.ok || result.message !== 'OK') {
+                if (['PRECIO_CAMBIO','PRODUCTO_CAMBIO'].includes(result.code)) item.revisar_precio = true
+                throw new Error(result.message || 'No se pudo guardar.')
+            }
             pending.shift(); render()
         }
         status.textContent = 'Pedido registrado. Consulta sus importes definitivos en Registros.'

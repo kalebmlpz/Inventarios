@@ -24,7 +24,10 @@ try {
         $stmt=$conn->prepare('SELECT * FROM articulo WHERE sku=?'); $stmt->execute([$sku]); $products=$stmt->fetchAll(PDO::FETCH_ASSOC);
         if (count($products)!==1) throw new DomainException('El código no existe o está duplicado. Revisa el catálogo.');
         $product=$products[0];
-        if (array_key_exists('producto_id',$_POST) && filter_var($_POST['producto_id'],FILTER_VALIDATE_INT) !== (int)$product['id_articulo']) throw new DomainException('El producto cambió. Actualízalo en el pedido antes de confirmar.');
+        if (array_key_exists('producto_id',$_POST) && filter_var($_POST['producto_id'],FILTER_VALIDATE_INT) !== (int)$product['id_articulo']) {
+            $conn->rollBack();http_response_code(409);
+            exit(json_encode(['message'=>'El producto cambió. Actualízalo en el pedido antes de confirmar.','code'=>'PRODUCTO_CAMBIO']));
+        }
         if (array_key_exists('precio_confirmado',$_POST) && normalizeSalePrice($_POST['precio_confirmado']) !== normalizeSalePrice((string)$product['precio'])) {
             $conn->rollBack();http_response_code(409);
             exit(json_encode(['message'=>'El precio de '.$product['nombre'].' cambió. Actualízalo en el pedido antes de confirmar.','code'=>'PRECIO_CAMBIO']));

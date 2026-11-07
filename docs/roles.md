@@ -122,7 +122,7 @@ Con respaldo previo, actualiza archivos e importa **una sola vez** `App/migratio
 
 - Los precios están expresados en pesos mexicanos (**MXN**). Cada venta nueva guarda precio unitario, importe y moneda al confirmarse. Los importes se calculan con decimales exactos, sin redondeos de punto flotante.
 - En Ventas se muestra precio unitario, subtotal de cada línea y total estimado. El servidor confirma el precio del catálogo, no acepta un importe reducido enviado por el navegador.
-- Si el precio cambia mientras está abierto un pedido, la línea se conserva y debe actualizarse explícitamente antes de volver a confirmar. El resto de líneas ya confirmadas no se vuelve a vender. Los pedidos pendientes guardados antes de esta actualización necesitan Actualizar precio para poder confirmarse.
+- Si el precio cambia mientras está abierto un pedido, la línea se conserva y aparece el icono Actualizar precio para revisarlo explícitamente antes de volver a confirmar. Este icono queda oculto mientras el precio esté confirmado; Quitar producto se presenta como una papelera con descripción al pasar el cursor. El resto de líneas ya confirmadas no se vuelve a vender. Los pedidos pendientes guardados antes de esta actualización necesitan Actualizar precio para poder confirmarse.
 - Los reenvíos de una venta ya confirmada conservan el precio y el importe originales; no toman el nuevo precio del catálogo ni vuelven a descontar stock.
 - Las cancelaciones y devoluciones usan el precio unitario original en la cantidad corregida, aunque el catálogo haya cambiado. No se realiza un reembolso bancario ni un movimiento de caja desde esta función.
 - Registros muestra los importes de ventas y correcciones. Las operaciones de inventario no se presentan como ventas monetarias.

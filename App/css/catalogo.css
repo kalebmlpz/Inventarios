@@ -107,9 +107,12 @@ input[readonly] { background: #f3f0e8; color: #6d665b; }
 @media(max-width:750px) { .report-filter > div { grid-template-columns: 1fr 1fr; } }
 @media(max-width:500px) { .report-filter > div { grid-template-columns: 1fr; } .report-filter button { width: 100%; } }
 .sale-line > div:first-child { flex: 1; min-width: 0; }
-.sale-line-actions { display: flex; flex-direction: column; gap: 8px; }
-.sale-line-actions button { min-height: 34px; padding: 8px 10px; font-size: 11px; background: #f1eee5; color: #292823; }
-.sale-line-actions button:hover { background: #e6e1d7; }
+.sale-line-actions { display: flex; align-self: flex-start; align-items: center; gap: 4px; }
+.sale-line-actions button { width: 40px; height: 40px; min-height: 40px; padding: 10px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #756e61; justify-content: center; flex-shrink: 0; }
+.sale-line-actions button:hover { background: #f1eee5; color: #1a1a1a; }
+.sale-line-actions svg { width: 18px; height: 18px; }
+.sale-line-actions button:focus-visible { background: #f1eee5; outline: 2px solid #1a1a1a; outline-offset: 2px; }
+@media(max-width:600px) { .sale-line-actions button { width: 44px; height: 44px; min-height: 44px; } }
 .sale-subtotal { font-weight: 600; margin: 10px 0 0; }
 .order-total { font-size: 17px; font-weight: 600; margin: 24px 0 18px; }
 .money-summary { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; padding: 0 24px 24px; }
