@@ -75,8 +75,18 @@ if ($admin && isset($_GET['editar']) && !$editing) {
     $stmt->execute([$_GET['editar']]); $editing = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 $q = is_string($_GET['q'] ?? null) ? trim($_GET['q']) : '';
-$stmt = $conn->prepare('SELECT * FROM articulo WHERE nombre LIKE ? OR CAST(sku AS CHAR) LIKE ? ORDER BY nombre');
-$stmt->execute(['%'.$q.'%', '%'.$q.'%']); $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$categoryFilter = is_string($_GET['categoria'] ?? null) && in_array($_GET['categoria'], $categorias, true) ? $_GET['categoria'] : '';
+$stockFilter = is_string($_GET['estado'] ?? null) && in_array($_GET['estado'], ['bajo', 'agotado'], true) ? $_GET['estado'] : '';
+$query = 'SELECT * FROM articulo WHERE (nombre LIKE ? OR CAST(sku AS CHAR) LIKE ?)';
+$params = ['%'.$q.'%', '%'.$q.'%'];
+if ($categoryFilter !== '') { $query .= ' AND categoria=?'; $params[] = $categoryFilter; }
+// Los arreglos solo por encargo consumen materiales; no mantienen unidades listas.
+if ($stockFilter !== '') $query .= " AND NOT (categoria='Arreglos' AND modalidad='Por encargo')";
+if ($stockFilter === 'bajo') $query .= ' AND stock<=stock_minimo';
+if ($stockFilter === 'agotado') $query .= ' AND stock=0';
+$query .= ' ORDER BY nombre';
+$stmt = $conn->prepare($query);
+$stmt->execute($params); $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $showForm = $admin && ($editing || basename($_SERVER['SCRIPT_NAME']) === 'alta.php');
 ?>
 <!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Productos y existencias · Florería</title><link rel="stylesheet" href="../css/usuarios.css?v=<?= filemtime(__DIR__ . '/../css/usuarios.css') ?>"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__ . '/../css/catalogo.css') ?>"></head>
@@ -133,10 +143,20 @@ function catalogSelect($key, $label, $options, $editing) { ?>
 <script src="./js/catalogo.js?v=<?= filemtime(__DIR__ . '/js/catalogo.js') ?>" defer></script>
 <?php endif; ?>
 <?php if (!$showForm): ?>
-<section class="user-card catalog-list"><div class="list-heading"><div><h2>Catálogo</h2></div><?php if ($admin): ?><div class="catalog-actions"><a class="action" href="alta.php">Nuevo producto</a><a class="action" href="movimiento.php?tipo=entrada">Registrar entrada</a><a class="action" href="movimiento.php?tipo=merma">Registrar merma</a></div><?php endif; ?></div><form class="search" method="get"><label for="q">Buscar producto</label><div><input id="q" name="q" value="<?= esc($q) ?>" placeholder="Nombre o código"><button>Buscar</button></div></form>
+<section class="user-card catalog-list"><div class="list-heading"><div><h2>Catálogo</h2></div><?php if ($admin): ?><div class="catalog-actions"><a class="action" href="alta.php">Nuevo producto</a><a class="action" href="movimiento.php?tipo=entrada">Registrar entrada</a><a class="action" href="movimiento.php?tipo=merma">Registrar merma</a></div><?php endif; ?></div><form class="search catalog-filter" method="get"><div class="filter-fields">
+<div><label for="q">Buscar producto</label><input id="q" name="q" value="<?= esc($q) ?>" placeholder="Nombre o código"></div>
+<div><label for="categoria-filtro">Categoría</label><select id="categoria-filtro" name="categoria"><option value="">Todas</option><?php foreach ($categorias as $category): ?><option <?= $categoryFilter === $category ? 'selected' : '' ?>><?= esc($category) ?></option><?php endforeach; ?></select></div>
+<div><label for="estado">Existencias</label><select id="estado" name="estado"><option value="">Todas</option><option value="bajo" <?= $stockFilter === 'bajo' ? 'selected' : '' ?>>Stock bajo</option><option value="agotado" <?= $stockFilter === 'agotado' ? 'selected' : '' ?>>Agotados</option></select></div>
+<button>Buscar</button></div>
+<div class="filter-description"><p class="field-note">Stock bajo: unidades disponibles iguales o menores al mínimo. No incluye arreglos solo por encargo.</p><?php if ($q !== '' || $categoryFilter !== '' || $stockFilter !== ''): ?><a class="edit-link" href="consulta.php">Limpiar filtros</a><?php endif; ?></div>
+<p class="catalog-result-count"><?= count($productos) ?> <?= count($productos) === 1 ? 'producto encontrado' : 'productos encontrados' ?></p></form>
 <div class="table-wrap"><table><thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Existencias</th><th>Mínimo</th><th>Precio</th><th>Modalidad</th><?php if ($admin): ?><th>Acciones</th><?php endif; ?></tr></thead><tbody>
-<?php foreach ($productos as $producto): ?><tr><td><?= esc($producto['sku']) ?></td><td><strong><?= esc($producto['nombre']) ?></strong><?php if ($producto['observaciones']): ?><small><?= esc($producto['observaciones']) ?></small><?php endif; ?></td><td><?= esc($producto['categoria']) ?></td><td><span class="<?= $producto['stock'] <= $producto['stock_minimo'] ? 'low-stock' : '' ?>"><?= esc($producto['stock']) ?> <?= esc(stockUnit($producto['stock'], $producto['unidad'])) ?></span></td><td><?= esc($producto['stock_minimo']) ?></td><td><?= number_format((float)$producto['precio'], 2) ?></td><td><?= esc($producto['modalidad']) ?></td><?php if ($admin): ?><td><div class="row-actions"><a class="edit-link" href="consulta.php?editar=<?= (int)$producto['id_articulo'] ?>">Editar</a><?php if ($producto['categoria'] === 'Arreglos'): ?><a class="edit-link" href="componentes.php?id=<?= (int)$producto['id_articulo'] ?>">Componentes / Preparar</a><?php endif; ?><form method="post" action="../backend/eliminar_producto.php" onsubmit="return confirm('¿Eliminar definitivamente este producto y sus existencias del catálogo? Esta acción no se puede deshacer. El historial de ventas se conserva.')"><input type="hidden" name="csrf" value="<?= esc($_SESSION['csrf']) ?>"><input type="hidden" name="id" value="<?= (int)$producto['id_articulo'] ?>"><button class="delete-product" aria-label="Eliminar <?= esc($producto['nombre']) ?>">Eliminar</button></form></div></td><?php endif; ?></tr><?php endforeach; ?>
-<?php if (!$productos): ?><tr><td colspan="8">No se encontraron productos.</td></tr><?php endif; ?>
+<?php foreach ($productos as $producto): ?><tr><td><?= esc($producto['sku']) ?></td><td><strong><?= esc($producto['nombre']) ?></strong><?php if ($producto['observaciones']): ?><small><?= esc($producto['observaciones']) ?></small><?php endif; ?></td><td><?= esc($producto['categoria']) ?></td><td><?php $madeToOrder = $producto['categoria'] === 'Arreglos' && $producto['modalidad'] === 'Por encargo'; ?>
+<?php if ($madeToOrder): ?><span class="stock-label">Por encargo</span><?php else: ?>
+<span class="<?= $producto['stock'] <= $producto['stock_minimo'] ? 'low-stock' : '' ?>"><?= esc($producto['stock']) ?> <?= esc(stockUnit($producto['stock'], $producto['unidad'])) ?></span>
+<?php if ((int)$producto['stock'] === 0): ?><small class="stock-badge stock-empty"><?= $producto['categoria'] === 'Arreglos' ? 'Sin arreglos listos' : 'Agotado' ?></small><?php elseif ($producto['stock'] <= $producto['stock_minimo']): ?><small class="stock-badge">Stock bajo</small><?php endif; ?>
+<?php endif; ?></td><td><?= esc($producto['stock_minimo']) ?></td><td><?= number_format((float)$producto['precio'], 2) ?></td><td><?= esc($producto['modalidad']) ?></td><?php if ($admin): ?><td><div class="row-actions"><a class="edit-link" href="consulta.php?editar=<?= (int)$producto['id_articulo'] ?>">Editar</a><?php if ($producto['categoria'] === 'Arreglos'): ?><a class="edit-link" href="componentes.php?id=<?= (int)$producto['id_articulo'] ?>">Componentes / Preparar</a><?php endif; ?><form method="post" action="../backend/eliminar_producto.php" onsubmit="return confirm('¿Eliminar definitivamente este producto y sus existencias del catálogo? Esta acción no se puede deshacer. El historial de ventas se conserva.')"><input type="hidden" name="csrf" value="<?= esc($_SESSION['csrf']) ?>"><input type="hidden" name="id" value="<?= (int)$producto['id_articulo'] ?>"><button class="delete-product" aria-label="Eliminar <?= esc($producto['nombre']) ?>">Eliminar</button></form></div></td><?php endif; ?></tr><?php endforeach; ?>
+<?php if (!$productos): ?><tr><td colspan="8">No se encontraron productos con estos filtros.</td></tr><?php endif; ?>
 </tbody></table></div></section>
 <?php endif; ?>
 </main></body></html>

@@ -27,8 +27,8 @@ function existingOperation($conn, $token, $actor) {
     return $record;
 }
 function recordOperation($conn, $product, $quantity, $type, $actor, $date, $token = null, $mode = null) {
-    $stmt = $conn->prepare('INSERT INTO registros(sku,cantidad,fecha,usuario_id,tipo,nombre_snapshot,operacion_id,modo) VALUES(?,?,?,?,?,?,?,?)');
-    $stmt->execute([$product['sku'], $quantity, $date, $actor, $type, $product['nombre'], $token, $mode]);
+    $stmt = $conn->prepare('INSERT INTO registros(sku,cantidad,fecha,usuario_id,tipo,nombre_snapshot,operacion_id,modo,articulo_id,unidad_snapshot,categoria_snapshot) VALUES(?,?,?,?,?,?,?,?,?,?,?)');
+    $stmt->execute([$product['sku'], $quantity, $date, $actor, $type, $product['nombre'], $token, $mode, $product['id_articulo'] ?? null, $product['unidad'] ?? null, $product['categoria'] ?? null]);
     return $conn->lastInsertId();
 }
 function changeStock($conn, $product, $delta, $record) {
@@ -37,8 +37,8 @@ function changeStock($conn, $product, $delta, $record) {
     if ($new > 2147483647) throw new DomainException('La cantidad supera el límite permitido.');
     $stmt = $conn->prepare('UPDATE articulo SET stock=? WHERE id_articulo=?');
     $stmt->execute([$new, $product['id_articulo']]);
-    $stmt = $conn->prepare('INSERT INTO movimientos(registro_id,sku,nombre,cantidad,stock_resultante) VALUES(?,?,?,?,?)');
-    $stmt->execute([$record, $product['sku'], $product['nombre'], $delta, $new]);
+    $stmt = $conn->prepare('INSERT INTO movimientos(registro_id,sku,nombre,cantidad,stock_resultante,articulo_id,unidad_snapshot,categoria_snapshot) VALUES(?,?,?,?,?,?,?,?)');
+    $stmt->execute([$record, $product['sku'], $product['nombre'], $delta, $new, $product['id_articulo'], $product['unidad'], $product['categoria']]);
 }
 function consumeRecipe($conn, $product, $quantity, $record) {
     $stmt = $conn->prepare('SELECT componente_id,cantidad FROM componentes WHERE arreglo_id=? ORDER BY componente_id');

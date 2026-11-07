@@ -52,3 +52,28 @@ En **Productos y existencias**, el Administrador dispone de **Nuevo producto**, 
 - La edición de productos permite modificar sus datos, precio y stock mínimo. Las existencias de productos existentes son de solo lectura; usa las acciones de movimiento. Si la cantidad cambió desde que abriste la edición, recarga antes de guardar.
 
 Para probar: crea un material con 10 unidades, registra una entrada de 50 y una merma de 5. Deben quedar 55 y dos movimientos nuevos con sus motivos. Prueba una merma superior a 55: debe rechazarse sin alterar las existencias. `python3 tests/entradas_mermas.py` verifica además permisos, reenvíos, límites y operaciones simultáneas con datos temporales.
+
+## Filtros de existencias
+
+El catálogo permite combinar búsqueda por nombre/código, categoría y existencias. Stock bajo incluye cantidades iguales o menores al stock mínimo, incluidos los agotados. Agotados muestra stock cero. Los arreglos solo por encargo quedan fuera de ambos filtros porque no mantienen unidades terminadas; pueden consultarse con Todas. Un arreglo Preparado o Ambas sin unidades se identifica como Sin arreglos listos.
+
+Los filtros son de consulta para Administrador y Cajero; no cambian las cantidades ni requieren una migración SQL. Limpiar filtros restablece el catálogo completo. Prueba de límites y permisos: `python3 tests/catalogo_filtros.py`.
+
+## Cancelaciones y devoluciones
+
+Con un respaldo previo, aplica **una sola vez** `App/migrations/006_cancelaciones_devoluciones.sql` después de la 005. Conserva todas las ventas y movimientos anteriores. Para instalaciones nuevas, el volcado completo ya incluye estas columnas; no se aplican migraciones adicionales.
+
+El Administrador puede entrar a **Registros → Cancelar / Devolver** en cada venta con unidades pendientes de corregir. El Cajero ve las correcciones acumuladas en sus ventas, pero no puede registrarlas. Cada venta corresponde a una línea del pedido; se corrige la cantidad elegida de esa línea, no todas las líneas automáticamente.
+
+- Elige **Cancelación** o **Devolución**, cantidad y motivo. Se permiten cantidades completas o parciales, hasta las unidades que quedan sin corregir. Se requiere confirmar la revisión de la mercancía.
+- **Sin reintegro:** conserva el stock actual. Corresponde cuando no se recibe mercancía utilizable. No se descuenta otra merma: esas unidades ya salieron en la venta original.
+- **Reintegrar producto recibido en buen estado:** suma el producto terminado o material individual recibido. Un arreglo por encargo se recibe como arreglo terminado, nunca como flores sueltas; debe estar configurado como Preparado o Ambas para mantener unidades listas.
+- **Corregir captura por error:** solo se permite con Cancelación y cuando los productos o materiales realmente no se entregaron ni utilizaron. Revierte la proporción correspondiente del consumo original registrado en la venta. Una receta modificada después no altera esa reconstrucción.
+- La venta original conserva su cantidad y muestra cuántas unidades se corrigieron. Se crea otro registro, con la fecha actual, cantidad, motivo, Administrador y vínculo a la venta original. No se borra el historial ni se realizan reembolsos monetarios desde esta función.
+- Un reenvío de la misma solicitud no duplica la corrección. Dos solicitudes simultáneas no pueden superar las unidades vendidas. Los reintegros son completos por operación: ante un error no se recupera solo una parte de los componentes.
+- Las ventas anteriores a esta migración no tienen identidad/unidad verificable de cada producto. Pueden corregirse Sin reintegro; no se inventa una correspondencia a partir de un código que pudo haberse reutilizado. Comprueba físicamente los materiales antes de registrar cualquier entrada por separado.
+- Si el producto fue eliminado o cambió de unidad o categoría, se bloquea el reintegro automático. El historial nuevo mantiene las identidades y unidades originales aun si se edita el código o el nombre.
+
+Las correcciones confirmadas son registros de auditoría y no se editan ni se borran desde la interfaz. Revisa el tratamiento elegido antes de confirmar.
+
+Prueba funcional: `python3 tests/correcciones_ventas.py`, que usa productos temporales y verifica correcciones completas/parciales, reintegros, recetas modificadas, unidades cambiadas, productos eliminados, duplicados, permisos y concurrencia.

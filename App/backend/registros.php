@@ -8,7 +8,7 @@ $parsed=is_string($date)?DateTimeImmutable::createFromFormat('!Y-m-d',$date):fal
 if ($_SERVER['REQUEST_METHOD']!=='GET'||!$parsed||$parsed->format('Y-m-d')!==$date) { http_response_code(400); exit(json_encode(['message'=>'Selecciona una fecha válida'])); }
 try {
     $conn=inventoryDb();
-    $query='SELECT r.*,COALESCE(r.nombre_snapshot,a.nombre) AS nombre,u.username AS responsable FROM registros r LEFT JOIN (SELECT sku,MAX(nombre) AS nombre FROM articulo GROUP BY sku) a ON a.sku=r.sku LEFT JOIN usuarios u ON u.id=r.usuario_id WHERE r.fecha=?';
+    $query="SELECT r.*, (SELECT COALESCE(SUM(c.cantidad),0) FROM registros c WHERE c.venta_origen_id=r.id AND c.tipo IN ('Cancelación','Devolución')) AS cantidad_corregida,COALESCE(r.nombre_snapshot,a.nombre) AS nombre,u.username AS responsable FROM registros r LEFT JOIN (SELECT sku,MAX(nombre) AS nombre FROM articulo GROUP BY sku) a ON a.sku=r.sku LEFT JOIN usuarios u ON u.id=r.usuario_id WHERE r.fecha=?";
     $params=[$date]; if ($user['rol']==='Cajero') { $query.=' AND r.usuario_id=?'; $params[]=$user['id']; }
     $query.=' ORDER BY r.id DESC'; $stmt=$conn->prepare($query); $stmt->execute($params); $records=$stmt->fetchAll(PDO::FETCH_ASSOC);
     $stmt=$conn->prepare('SELECT m.* FROM movimientos m JOIN registros r ON r.id=m.registro_id WHERE r.fecha=?'.($user['rol']==='Cajero'?' AND r.usuario_id=?':'').' ORDER BY m.id');

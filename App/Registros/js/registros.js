@@ -2,7 +2,8 @@ const formulario = document.getElementById('formulario-articulos')
 const fechaInput = document.getElementById('fecha')
 const tabla = document.getElementById('tabla')
 const hoy = new Date()
-fechaInput.value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`
+const requestedDate = new URLSearchParams(location.search).get('fecha')
+fechaInput.value = requestedDate && /^\d{4}-\d{2}-\d{2}$/.test(requestedDate) ? requestedDate : `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`
 let consultaActual = 0
 
 async function cargarRegistros() {
@@ -37,6 +38,12 @@ async function cargarRegistros() {
                 td.textContent = valor
                 tr.appendChild(td)
             }
+            const reference = document.createElement('small')
+            const corrected = Number(registro.cantidad_corregida || 0)
+            reference.textContent = `Folio #${registro.id}`
+            if (registro.venta_origen_id) reference.textContent += ` · Venta original #${registro.venta_origen_id}`
+            if (registro.tipo === 'Venta' && corrected > 0) reference.textContent += ` · Corregidas: ${corrected} de ${registro.cantidad}`
+            tr.children[1].appendChild(reference)
             const cell = document.createElement('td')
             const details = document.createElement('details')
             const summary = document.createElement('summary')
@@ -49,7 +56,19 @@ async function cargarRegistros() {
                 details.appendChild(line)
             }
             if (registro.movimientos?.length) cell.appendChild(details)
-            else cell.textContent = 'Registro anterior sin detalle de existencias'
+            else cell.textContent = registro.tratamiento === 'sin_stock' ? 'Sin movimiento de existencias' : 'Registro anterior sin detalle de existencias'
+            if (tabla.dataset.admin === '1' && registro.tipo === 'Venta' && Number(registro.cantidad) > corrected) {
+                const action = document.createElement('a')
+                action.className = 'edit-link correction-link'
+                action.href = `devolucion.php?id=${encodeURIComponent(registro.id)}`
+                action.textContent = 'Cancelar / Devolver'
+                cell.appendChild(action)
+            }
+            if (registro.tratamiento) {
+                const handling = document.createElement('small')
+                handling.textContent = ({sin_stock:'Sin reintegro',producto:'Producto reintegrado',captura:'Captura revertida'})[registro.tratamiento] || ''
+                cell.appendChild(handling)
+            }
             tr.appendChild(cell)
             tbody.appendChild(tr)
         }
