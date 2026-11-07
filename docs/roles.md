@@ -77,3 +77,22 @@ El Administrador puede entrar a **Registros → Cancelar / Devolver** en cada ve
 Las correcciones confirmadas son registros de auditoría y no se editan ni se borran desde la interfaz. Revisa el tratamiento elegido antes de confirmar.
 
 Prueba funcional: `python3 tests/correcciones_ventas.py`, que usa productos temporales y verifica correcciones completas/parciales, reintegros, recetas modificadas, unidades cambiadas, productos eliminados, duplicados, permisos y concurrencia.
+
+## Reportes del Administrador
+
+Acceso desde **Menú → Reportes**, disponible exclusivamente para el Administrador. Esta etapa no agrega columnas ni requiere otra migración si la base ya tiene aplicada la 006.
+
+Elige fechas Desde/Hasta y uno de estos reportes:
+
+- **Ventas netas:** agrupa las ventas cuya fecha está en el periodo. Muestra cantidades vendidas, corregidas y netas; descuenta las correcciones acumuladas hasta el momento de consulta, incluso si ocurrieron fuera del periodo de la venta. Una venta corregida no se cuenta como una venta nueva.
+- **Consumo de materiales:** incluye salidas de materiales al preparar arreglos y venderlos por encargo, así como reintegros de capturas corregidas durante las fechas elegidas. No vuelve a contar materiales al vender un arreglo ya preparado. Los consumos y correcciones se atribuyen a sus respectivas fechas; el neto puede ser negativo si se revierte un consumo de un periodo anterior.
+- **Mermas:** unidades perdidas y número de operaciones por producto/unidad en el periodo.
+- **Movimientos:** detalle por folio, fecha, tipo, producto, cantidad, unidad, responsable, motivo y referencia a la venta original, cuando exista.
+
+Las cantidades se mantienen por producto y unidad. Un cambio de unidad en la ficha no reescribe los datos históricos ni mezcla sus cantidades. Las unidades o nombres que no se guardaron en registros antiguos se muestran como desconocidos; no se inventan a partir de la ficha actual.
+
+**Descargar CSV** exporta la misma vista y periodo seleccionados, con UTF-8 y separador punto y coma. Puede abrirse/importarse en Excel; si aparece todo en una columna, importa el archivo usando `;` como separador. Los campos de texto se protegen para que Excel no los ejecute como fórmulas.
+
+Estos reportes muestran cantidades, no importes monetarios ni ganancias: las ventas actuales todavía no guardan precios históricos. No debe multiplicarse una venta antigua por el precio actual del catálogo.
+
+Validación: `python3 tests/reportes.py` comprueba fechas, ventas corregidas, unidades, consumo, mermas, permisos y CSV. Las pruebas usan datos temporales y los limpian al terminar.

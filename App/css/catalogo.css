@@ -102,3 +102,7 @@ input[readonly] { background: #f3f0e8; color: #6d665b; }
 .movement-page .confirmation-label { margin-bottom: 24px; }
 
 .correction-link { margin-top: 12px; white-space: nowrap; }
+.report-filter > div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.5fr) auto; align-items: end; gap: 18px; }
+.report-note { margin: 20px 24px 24px; color: #756e61; font-size: 12px; line-height: 1.7; }
+@media(max-width:750px) { .report-filter > div { grid-template-columns: 1fr 1fr; } }
+@media(max-width:500px) { .report-filter > div { grid-template-columns: 1fr; } .report-filter button { width: 100%; } }
