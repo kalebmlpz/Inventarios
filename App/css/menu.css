@@ -165,3 +165,10 @@ a {
         min-height: 190px;
     }
 }
+
+.menu-panel-admin { width: min(100%, 980px); }
+.menu-admin { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.reports-icon { width: 100px; height: 100px; margin: 5px auto; }
+.menu > a:focus-visible { outline: 2px solid var(--principal-color); outline-offset: 4px; }
+@media (max-width: 900px) { .menu-admin { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .menu-admin { grid-template-columns: 1fr; } }
