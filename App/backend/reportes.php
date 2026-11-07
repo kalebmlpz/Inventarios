@@ -3,6 +3,7 @@ require_once __DIR__ . '/inventario.php';
 function reportDefinitions() {
     return [
         'ventas' => ['titulo'=>'Ventas netas', 'columnas'=>['Código','Producto','Unidad','Vendidas','Corregidas','Netas'], 'nota'=>'Agrupa las ventas del periodo. Las correcciones se cuentan hasta hoy, aunque se hayan registrado después de la venta. No representa importes de dinero.'],
+        'importes' => ['titulo'=>'Importes de ventas', 'columnas'=>['Folio','Fecha','Código','Producto','Unidad','Moneda','Vendidas','Corregidas','Precio unitario','Importe bruto','Importe corregido','Importe neto'], 'nota'=>'Usa el precio guardado en cada venta y sus correcciones acumuladas hasta hoy. No calcula utilidad ni realiza reembolsos de dinero.'],
         'consumo' => ['titulo'=>'Consumo de materiales', 'columnas'=>['Código','Material','Unidad','Consumido','Reintegrado','Neto del periodo'], 'nota'=>'Materiales consumidos al preparar arreglos o vender por encargo. Los reintegros corresponden a capturas corregidas en estas fechas. El neto puede ser negativo si se revierte un consumo de otro periodo.'],
         'mermas' => ['titulo'=>'Mermas', 'columnas'=>['Código','Producto','Unidad','Unidades perdidas','Operaciones'], 'nota'=>'Pérdidas registradas durante el periodo. Cada unidad se informa por separado: no se suman tallos, paquetes y arreglos como si fueran equivalentes.'],
         'movimientos' => ['titulo'=>'Movimientos', 'columnas'=>['Folio','Fecha','Tipo','Código','Producto','Cantidad','Unidad','Responsable','Motivo','Venta original'], 'nota'=>'Detalle de las operaciones registradas en estas fechas. Las ventas originales y sus correcciones se conservan como operaciones separadas.'],
@@ -19,12 +20,25 @@ function reportGroupKey($row) {
     // Las unidades desconocidas o modificadas no se mezclan con otras unidades.
     return json_encode([$row['articulo_id'] ?? [$row['sku'],$row['nombre']], $row['unidad_snapshot']]);
 }
-function loadReport($conn, $kind, $start, $end) {
+function loadReport($conn, $kind, $start, $end, &$summary = null) {
+    $summary=[];
     reportDates($start,$end);
     if (!isset(reportDefinitions()[$kind])) throw new DomainException('Selecciona un reporte válido.');
+    $conn->exec('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
     $conn->beginTransaction();
     try {
-        if ($kind === 'movimientos') {
+        if ($kind === 'importes') {
+            $query=moneyReportQuery();
+            $stmt=$conn->prepare($query.' ORDER BY s.fecha DESC,s.id DESC');$stmt->execute([$start,$end]);
+            $rows=[];$summary['sin_precio']=0;
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
+                $known=$r['precio_unitario']!==null && $r['importe']!==null && $r['moneda']!==null;
+                if (!$known) $summary['sin_precio']++;
+                $rows[]=[$r['id'],$r['fecha'],$r['sku'],$r['nombre_snapshot']??'Sin nombre registrado',$r['unidad_snapshot']??'Sin unidad registrada',$r['moneda']??'',(int)$r['cantidad'],(int)$r['corregidas'],$known?$r['precio_unitario']:'Sin precio registrado',$known?$r['importe']:'',$known?$r['importe_corregido']:'',$known?$r['importe_neto']:''];
+            }
+            $stmt=$conn->prepare('SELECT moneda,SUM(importe) AS bruto,SUM(importe_corregido) AS corregido,SUM(importe_neto) AS neto FROM ('.$query.') cash WHERE precio_unitario IS NOT NULL AND importe IS NOT NULL AND moneda IS NOT NULL GROUP BY moneda ORDER BY moneda');
+            $stmt->execute([$start,$end]);$summary['totales']=$stmt->fetchAll(PDO::FETCH_ASSOC);
+        } elseif ($kind === 'movimientos') {
             $stmt=$conn->prepare("SELECT r.*,u.username FROM registros r LEFT JOIN usuarios u ON u.id=r.usuario_id WHERE r.fecha BETWEEN ? AND ? ORDER BY r.fecha DESC,r.id DESC");
             $stmt->execute([$start,$end]); $rows=[];
             foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
@@ -62,4 +76,8 @@ function reportCsvValue($value) {
     // Excel debe interpretar los nombres/motivos como texto, no como fórmulas.
     if (preg_match('/^[\x00-\x20]*[=+@-]/u',$text) || preg_match('/^[\t\r\n]/u',$text)) return "'".$text;
     return $text;
+}
+
+function moneyReportQuery() {
+    return "SELECT s.*,CASE WHEN s.precio_unitario IS NOT NULL AND s.importe IS NOT NULL AND s.moneda IS NOT NULL THEN s.precio_unitario*s.corregidas ELSE NULL END AS importe_corregido,CASE WHEN s.precio_unitario IS NOT NULL AND s.importe IS NOT NULL AND s.moneda IS NOT NULL THEN s.importe-s.precio_unitario*s.corregidas ELSE NULL END AS importe_neto FROM (SELECT r.*,(SELECT COALESCE(SUM(c.cantidad),0) FROM registros c WHERE c.venta_origen_id=r.id AND c.tipo IN ('Cancelación','Devolución')) AS corregidas FROM registros r WHERE r.tipo='Venta' AND r.fecha BETWEEN ? AND ?) s";
 }

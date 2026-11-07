@@ -12,12 +12,12 @@ async function cargarRegistros() {
         alert('Por favor, seleccione una fecha')
         return
     }
-    tabla.innerHTML = '<thead><tr><th>SKU</th><th>Nombre</th><th>Cantidad</th><th>Tipo</th><th>Responsable</th><th>Motivo</th><th>Detalle</th></tr></thead><tbody></tbody>'
+    tabla.innerHTML = '<thead><tr><th>SKU</th><th>Nombre</th><th>Cantidad</th><th>Importe</th><th>Tipo</th><th>Responsable</th><th>Motivo</th><th>Detalle</th></tr></thead><tbody></tbody>'
     const tbody = tabla.querySelector('tbody')
     function mensaje(texto) {
         tbody.replaceChildren()
         const td = document.createElement('td')
-        td.colSpan = 7
+        td.colSpan = 8
         td.textContent = texto
         const tr = document.createElement('tr')
         tr.appendChild(td)
@@ -33,10 +33,15 @@ async function cargarRegistros() {
         if (registros.length === 0) mensaje('No hay movimientos registrados para esta fecha.')
         for (const registro of registros) {
             const tr = document.createElement('tr')
-            for (const valor of [registro.sku, registro.nombre ?? 'Artículo eliminado del catálogo', registro.cantidad, registro.tipo + (registro.modo ? ' · ' + registro.modo : ''), registro.responsable ?? 'Sin autor registrado', registro.motivo || '—']) {
+            for (const valor of [registro.sku, registro.nombre ?? 'Artículo eliminado del catálogo', registro.cantidad, ['Venta','Cancelación','Devolución'].includes(registro.tipo) ? (registro.importe === null ? 'Sin precio registrado' : window.FloreriaMoney.amount(registro.importe, registro.moneda)) : '—', registro.tipo + (registro.modo ? ' · ' + registro.modo : ''), registro.responsable ?? 'Sin autor registrado', registro.motivo || '—']) {
                 const td = document.createElement('td')
                 td.textContent = valor
                 tr.appendChild(td)
+            }
+            if (registro.precio_unitario !== null) {
+                const price = document.createElement('small')
+                price.textContent = 'Precio unitario: ' + window.FloreriaMoney.amount(registro.precio_unitario, registro.moneda)
+                tr.children[3].appendChild(price)
             }
             const reference = document.createElement('small')
             const corrected = Number(registro.cantidad_corregida || 0)

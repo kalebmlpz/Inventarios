@@ -1,5 +1,6 @@
 <?php
 date_default_timezone_set('America/Mexico_City');
+require_once __DIR__ . '/precios.php';
 function inventoryDb() {
     require __DIR__ . '/config.php';
     return new PDO("mysql:host={$db['host']};dbname={$db['db']};charset=utf8mb4", $db['username'], $db['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);

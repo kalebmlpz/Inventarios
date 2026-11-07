@@ -29,6 +29,7 @@ function correctSale($conn, $actor, $saleId, $input) {
             if ($quantity > $sale['pendientes']) throw new DomainException('La cantidad supera las unidades pendientes de esta venta: '.$sale['pendientes'].'.');
             $original = ['id_articulo'=>$sale['articulo_id'],'sku'=>$sale['sku'],'nombre'=>$sale['nombre_snapshot'] ?? 'Producto de la venta original','unidad'=>$sale['unidad_snapshot'],'categoria'=>$sale['categoria_snapshot']];
             $record = recordOperation($conn,$original,$quantity,$type,$actor,date('Y-m-d'),$token,$sale['modo']);
+            if ($sale['precio_unitario']!==null && $sale['importe']!==null && $sale['moneda']!==null) recordSalePrice($conn,$record,$sale['precio_unitario'],$sale['moneda']);
             $stmt = $conn->prepare('UPDATE registros SET venta_origen_id=?,tratamiento=?,motivo=?,solicitud_hash=? WHERE id=?');
             $stmt->execute([$saleId,$treatment,$reason,$hash,$record]);
             if ($treatment === 'producto') {

@@ -93,7 +93,7 @@ Las cantidades se mantienen por producto y unidad. Un cambio de unidad en la fic
 
 **Descargar CSV** exporta la misma vista y periodo seleccionados, con UTF-8 y separador punto y coma. Puede abrirse/importarse en Excel; si aparece todo en una columna, importa el archivo usando `;` como separador. Los campos de texto se protegen para que Excel no los ejecute como fórmulas.
 
-Estos reportes muestran cantidades, no importes monetarios ni ganancias: las ventas actuales todavía no guardan precios históricos. No debe multiplicarse una venta antigua por el precio actual del catálogo.
+Los reportes de cantidades se complementan con Importes de ventas a partir de la etapa 008, descrita al final. No debe multiplicarse una venta antigua por el precio actual del catálogo. Los costos y las ganancias siguen pendientes.
 
 Validación: `python3 tests/reportes.py` comprueba fechas, ventas corregidas, unidades, consumo, mermas, permisos y CSV. Las pruebas usan datos temporales y los limpian al terminar.
 
@@ -115,3 +115,20 @@ Desde **Administrar usuarios**, el Administrador ve la lista, busca por nombre y
 Las credenciales iniciales existentes siguen funcionando. El login conserva compatibilidad con las contraseñas antiguas y actualiza su almacenamiento cuando corresponde; un hash guardado no sirve como contraseña para iniciar sesión.
 
 Validación: `python3 tests/cuentas.py` prueba edición, contraseñas, sesiones, activación, permisos y solicitudes simultáneas. Las pruebas del último Administrador se ejecutan en una base temporal aislada, sin cambiar el rol ni el estado de la cuenta real Admin.
+
+## Precios históricos e importes en MXN
+
+Con respaldo previo, actualiza archivos e importa **una sola vez** `App/migrations/008_precios_historicos.sql` después de la 007. Las instalaciones nuevas ya incluyen estos campos en el volcado completo. No vuelvas a importar el volcado completo sobre una base existente.
+
+- Los precios están expresados en pesos mexicanos (**MXN**). Cada venta nueva guarda precio unitario, importe y moneda al confirmarse. Los importes se calculan con decimales exactos, sin redondeos de punto flotante.
+- En Ventas se muestra precio unitario, subtotal de cada línea y total estimado. El servidor confirma el precio del catálogo, no acepta un importe reducido enviado por el navegador.
+- Si el precio cambia mientras está abierto un pedido, la línea se conserva y debe actualizarse explícitamente antes de volver a confirmar. El resto de líneas ya confirmadas no se vuelve a vender. Los pedidos pendientes guardados antes de esta actualización necesitan Actualizar precio para poder confirmarse.
+- Los reenvíos de una venta ya confirmada conservan el precio y el importe originales; no toman el nuevo precio del catálogo ni vuelven a descontar stock.
+- Las cancelaciones y devoluciones usan el precio unitario original en la cantidad corregida, aunque el catálogo haya cambiado. No se realiza un reembolso bancario ni un movimiento de caja desde esta función.
+- Registros muestra los importes de ventas y correcciones. Las operaciones de inventario no se presentan como ventas monetarias.
+- Reportes incluye **Importes de ventas**, con importes brutos, corregidos y netos. Las correcciones acumuladas se atribuyen a las ventas del periodo seleccionado, incluso cuando se registraron en otra fecha. Los totales se mantienen separados por moneda.
+- Las ventas anteriores a esta migración no reciben precios inventados. Aparecen como Sin precio registrado y se excluyen de los totales de dinero, pero siguen contando en los reportes de cantidades. Un precio registrado de cero es válido y se distingue de un precio desconocido.
+
+Los importes de ventas no equivalen a utilidad: todavía no se registran costos históricos de compra. La exportación CSV conserva decimales y moneda para revisarlos en Excel.
+
+Validación: `python3 tests/precios.py` prueba centavos exactos, cambios de precio, correcciones, reenvíos, cantidades grandes, monedas separadas y registros antiguos.

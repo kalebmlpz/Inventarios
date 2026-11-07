@@ -7,8 +7,8 @@ $definitions=reportDefinitions();
 $kind=is_string($_GET['reporte']??null)?$_GET['reporte']:'ventas';
 $start=is_string($_GET['desde']??null)?$_GET['desde']:date('Y-m-01');
 $end=is_string($_GET['hasta']??null)?$_GET['hasta']:date('Y-m-d');
-$error='';$rows=[];
-try { $rows=loadReport(inventoryDb(),$kind,$start,$end); }
+$error='';$rows=[];$summary=[];
+try { $rows=loadReport(inventoryDb(),$kind,$start,$end,$summary); }
 catch (DomainException $e) { http_response_code(400);$error=$e->getMessage(); }
 catch (PDOException $e) { http_response_code(503);$error='No se pudo consultar el reporte. Comprueba la actualización de la base e inténtalo de nuevo.'; }
 $definition=$definitions[$kind]??$definitions['ventas'];
@@ -34,8 +34,12 @@ $export='reportes.php?'.http_build_query(['desde'=>$start,'hasta'=>$end,'reporte
 <?php if ($error===''): ?>
 <section class="user-card catalog-list"><div class="list-heading"><div><h2><?= esc($definition['titulo']) ?></h2><p class="catalog-result-count"><?= count($rows) ?> <?= count($rows)===1?'fila':'filas' ?> · <?= esc($start) ?> a <?= esc($end) ?></p></div><a class="action" href="<?= esc($export) ?>">Descargar CSV</a></div>
 <p class="report-note"><?= esc($definition['nota']) ?> Las unidades sin dato histórico se indican como “Sin unidad registrada”.</p>
-<div class="table-wrap"><table><thead><tr><?php foreach ($definition['columnas'] as $column): ?><th scope="col"><?= esc($column) ?></th><?php endforeach; ?></tr></thead><tbody>
-<?php foreach ($rows as $row): ?><tr><?php foreach ($row as $value): ?><td><?= esc($value) ?></td><?php endforeach; ?></tr><?php endforeach; ?>
+<?php if ($kind==='importes'): ?>
+<?php if ($summary['sin_precio']>0): ?><p class="report-note"><?= (int)$summary['sin_precio'] ?> <?= $summary['sin_precio']===1?'venta sin precio histórico; no se incluye':'ventas sin precio histórico; no se incluyen' ?> en los totales de dinero. No se usa el precio actual para completarlas.</p><?php endif; ?>
+<?php foreach ($summary['totales'] as $total): ?><div class="money-summary"><?php foreach (['bruto'=>'Importe bruto','corregido'=>'Importe corregido','neto'=>'Importe neto'] as $field=>$label): ?><div><small><?= $label ?> · <?= esc($total['moneda']) ?></small><strong><?= esc(moneyAmount($total[$field])) ?></strong></div><?php endforeach; ?></div><?php endforeach; ?>
+<?php endif; ?>
+<div class="table-wrap"><table class="<?= $kind==='importes'?'report-money-table':'' ?>"><thead><tr><?php foreach ($definition['columnas'] as $column): ?><th scope="col"><?= esc($column) ?></th><?php endforeach; ?></tr></thead><tbody>
+<?php foreach ($rows as $row): ?><tr><?php foreach ($row as $columnIndex=>$value): ?><td><?= esc($kind==='importes' && $columnIndex>=8 && is_numeric($value) ? moneyAmount($value) : ($value===''?'—':$value)) ?></td><?php endforeach; ?></tr><?php endforeach; ?>
 <?php if (!$rows): ?><tr><td colspan="<?= count($definition['columnas']) ?>">No hay datos para este reporte y periodo.</td></tr><?php endif; ?>
 </tbody></table></div></section>
 <?php endif; ?>

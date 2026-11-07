@@ -303,3 +303,11 @@ ALTER TABLE usuarios
  ADD UNIQUE KEY username_unico (username);
 CREATE TABLE cuentas_lock (id int PRIMARY KEY) ENGINE=InnoDB;
 INSERT INTO cuentas_lock VALUES (1);
+
+-- Ejecutar UNA VEZ después de 007_administracion_cuentas.sql, con respaldo previo.
+-- No se asignan precios actuales a ventas antiguas.
+
+ALTER TABLE registros
+ ADD precio_unitario decimal(10,2) DEFAULT NULL,
+ ADD importe decimal(20,2) DEFAULT NULL,
+ ADD moneda char(3) DEFAULT NULL;

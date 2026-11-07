@@ -106,3 +106,18 @@ input[readonly] { background: #f3f0e8; color: #6d665b; }
 .report-note { margin: 20px 24px 24px; color: #756e61; font-size: 12px; line-height: 1.7; }
 @media(max-width:750px) { .report-filter > div { grid-template-columns: 1fr 1fr; } }
 @media(max-width:500px) { .report-filter > div { grid-template-columns: 1fr; } .report-filter button { width: 100%; } }
+.sale-line > div:first-child { flex: 1; min-width: 0; }
+.sale-line-actions { display: flex; flex-direction: column; gap: 8px; }
+.sale-line-actions button { min-height: 34px; padding: 8px 10px; font-size: 11px; background: #f1eee5; color: #292823; }
+.sale-line-actions button:hover { background: #e6e1d7; }
+.sale-subtotal { font-weight: 600; margin: 10px 0 0; }
+.order-total { font-size: 17px; font-weight: 600; margin: 24px 0 18px; }
+.money-summary { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; padding: 0 24px 24px; }
+.money-summary div { padding: 16px; background: #f7f5ef; border-radius: 8px; }
+.money-summary strong { display: block; margin-top: 8px; font-size: 19px; overflow-wrap: anywhere; }
+.money-summary small { margin: 0; }
+@media(max-width:600px) { .money-summary { grid-template-columns: 1fr; } .sale-line { align-items: flex-start; } }
+.report-money-table { min-width: 1160px; }
+.report-money-table td:nth-child(2), .report-money-table td:nth-child(n+8) { white-space: nowrap; }
+.report-money-table td:nth-child(4) { min-width: 180px; }
+.order-total, .sale-subtotal, .sale-line strong, .sale-line small { overflow-wrap: anywhere; }

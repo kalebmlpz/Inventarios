@@ -19,19 +19,27 @@ try {
     $existing=existingOperation($conn,$token,$user['id']);
     if ($existing) {
         if ($existing['tipo'] !== 'Venta' || $existing['sku'] !== $sku || (int)$existing['cantidad'] !== $qty || $existing['modo'] !== $mode || $existing['fecha'] !== $date) throw new DomainException('La operación ya se utilizó con otros datos.');
+        $record=$existing['id'];
     } else {
         $stmt=$conn->prepare('SELECT * FROM articulo WHERE sku=?'); $stmt->execute([$sku]); $products=$stmt->fetchAll(PDO::FETCH_ASSOC);
         if (count($products)!==1) throw new DomainException('El código no existe o está duplicado. Revisa el catálogo.');
         $product=$products[0];
+        if (array_key_exists('producto_id',$_POST) && filter_var($_POST['producto_id'],FILTER_VALIDATE_INT) !== (int)$product['id_articulo']) throw new DomainException('El producto cambió. Actualízalo en el pedido antes de confirmar.');
+        if (array_key_exists('precio_confirmado',$_POST) && normalizeSalePrice($_POST['precio_confirmado']) !== normalizeSalePrice((string)$product['precio'])) {
+            $conn->rollBack();http_response_code(409);
+            exit(json_encode(['message'=>'El precio de '.$product['nombre'].' cambió. Actualízalo en el pedido antes de confirmar.','code'=>'PRECIO_CAMBIO']));
+        }
         if ($product['categoria']==='Arreglos') {
             $allowed = $mode==='Por encargo' ? ['Por encargo','Ambas'] : ['Preparado','Ambas'];
             if (!in_array($product['modalidad'],$allowed,true)) throw new DomainException('La modalidad de venta no está habilitada para este arreglo.');
         } elseif ($mode!=='Preparado') throw new DomainException('Solo los arreglos pueden venderse por encargo.');
         $record=recordOperation($conn,$product,$qty,'Venta',$user['id'],$date,$token,$mode);
+        recordSalePrice($conn,$record,$product['precio'],saleCurrency());
         if ($mode==='Por encargo') consumeRecipe($conn,$product,$qty,$record);
         else changeStock($conn,$product,-$qty,$record);
     }
-    $conn->commit(); http_response_code(201); echo json_encode(['message'=>'OK']);
+    $stmt=$conn->prepare('SELECT precio_unitario,importe,moneda FROM registros WHERE id=?');$stmt->execute([$record]);$receipt=$stmt->fetch(PDO::FETCH_ASSOC);
+    $conn->commit(); http_response_code(201); echo json_encode(['message'=>'OK']+$receipt);
 } catch (DomainException $e) {
     if (isset($conn) && $conn->inTransaction()) $conn->rollBack();
     http_response_code(409); echo json_encode(['message'=>$e->getMessage()]);
