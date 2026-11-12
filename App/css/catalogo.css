@@ -129,7 +129,6 @@ input[readonly] { background: #f3f0e8; color: #6d665b; }
 .inventory-catalog { border-radius: 18px; background: #fffefa; box-shadow: 0 10px 36px #463d2c06; }
 .inventory-catalog .list-heading { padding: 30px 28px 24px; align-items: center; }
 .inventory-catalog .list-heading h2 { font-size: 30px; margin-top: 8px; }
-.catalog-intro { margin: 8px 0 0; color: #817a6f; font-size: 12px; }
 .inventory-catalog .catalog-actions { gap: 8px; }
 .inventory-catalog .catalog-actions .action { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 42px; font-size: 12px; padding: 10px 14px; }
 .inventory-catalog .catalog-primary { background: #1a1a1a; }
