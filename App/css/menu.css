@@ -57,7 +57,7 @@ a {
 
 .menu-item:hover {
     background-color: #30322f;
-    transform: translateY(-3px);
+    transform: scale(1.04);
     box-shadow: 0 10px 24px #29282318;
 }
 
