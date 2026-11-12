@@ -50,3 +50,24 @@ h3 { margin: 0 0 10px; font-size: 14px; }
 }
 
 .user-form h1 { margin: 0 0 24px; font-size: 20px; letter-spacing: 0; }
+
+.back-link[href$="menu.php"],
+.back-link[href$="menu.php"]:visited {
+    min-height: 44px;
+    padding: 8px 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #292823;
+}
+.back-link[href$="menu.php"] { position: relative; }
+.back-link[href$="menu.php"]::before {
+    content: "";
+    position: absolute;
+    bottom: 6px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: currentColor;
+}
+.back-link[href$="menu.php"]:hover { background: transparent; color: #292823; text-decoration: none; }
