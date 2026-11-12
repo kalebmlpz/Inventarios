@@ -51,12 +51,14 @@ a {
     color: white;
 
     background-color: var(--principal-color);
-    transition: all 100ms;
+    border-radius: 14px;
+    transition: background-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
 }
 
 .menu-item:hover {
-    filter: brightness(140%);
-    transform: scale(105%);
+    background-color: #30322f;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px #29282318;
 }
 
 .dis-block {
@@ -105,8 +107,10 @@ a {
 }
 
 .box {
-    border: 1px solid var(--light-gray);
-    box-shadow: 0px 0px 10 var(--light-gray);
+    border: 1px solid #dfd9cd;
+    border-radius: 20px;
+    background: #fffefa;
+    box-shadow: 0 12px 36px #463d2c06;
 }
 
 .cerrar-sesion {
@@ -200,3 +204,18 @@ a {
 .users-action svg { width: 22px; height: 22px; flex-shrink: 0; }
 .menu-action.users-action:hover { color: #343a40; background: #eceeef; border-color: transparent; }
 .menu-action.users-action:focus-visible { outline-color: #343a40; }
+
+:root { font-family: "Segoe UI", Arial, sans-serif; color: #292823; background: #f6f4ef; font-synthesis: none; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+.menu-heading { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 30px; padding: 0 4px; }
+.menu-eyebrow { font-size: 10px; font-weight: 650; letter-spacing: 1.8px; color: #756952; }
+.menu-heading h1 { font-family: Georgia, serif; font-weight: 400; font-size: clamp(28px, 4vw, 40px); letter-spacing: -1.2px; line-height: 1.2; margin: 12px 0 0; overflow-wrap: anywhere; }
+.menu-heading h1 span { color: #a87b65; }
+.menu-role { padding: 8px 12px; border-radius: 20px; background: #eee8dc; color: #655e52; font-size: 12px; flex-shrink: 0; }
+.menu-item h3 { margin: 0; font-weight: 500; font-size: 15px; letter-spacing: .2px; }
+.menu-actions { margin-top: 26px; padding-top: 4px; }
+.menu-action { font-size: 13px; }
+.menu > a { border-radius: 14px; }
+@media(max-width:560px) { .menu-heading { align-items: flex-start; gap: 12px; } .menu-role { font-size: 10px; padding: 7px 9px; } .menu { padding: 14px; gap: 12px; } }
+@media(prefers-reduced-motion:reduce) { .menu-item { transition: none; } .menu-item:hover { transform: none; } }

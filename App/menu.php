@@ -10,15 +10,15 @@ $currentUser = require_access(['Administrador', 'Cajero'], false);
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Menu</title>
 
-        <!-- <link rel="stylesheet" href="./css/bootstrap.min.css"> -->
-        <link rel="stylesheet" href="./css/styles.css">
         <link rel="stylesheet" href="./css/menu.css?v=<?= filemtime(__DIR__ . '/css/menu.css') ?>">
     </head>
     <body>
         <div class="display-center">
             <div class="menu-panel <?= $currentUser['rol'] === 'Administrador' ? 'menu-panel-admin' : '' ?>">
-                <h1 class="text-primary text-center text-menu">Menú</h1>
-                <p class="text-center"><?= $currentUser['rol'] ?></p>
+                <header class="menu-heading">
+                    <div><span class="menu-eyebrow">FLORERÍA / MENÚ</span><h1>Menú principal<span>.</span></h1></div>
+                    <span class="menu-role"><?= htmlspecialchars($currentUser['rol'], ENT_QUOTES, 'UTF-8') ?></span>
+                </header>
                 <div class="box">
                     <div class="menu <?= $currentUser['rol'] === 'Administrador' ? 'menu-admin' : '' ?>">
     
