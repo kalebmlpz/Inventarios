@@ -1,0 +1,11 @@
+.order-state { display: inline-block; padding: 6px 10px; border-radius: 6px; background: #eae6da; font-weight: 600; white-space: nowrap; }
+.order-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; min-width: 180px; }
+.order-actions form { margin: 0; width: 100%; }
+.order-actions button { min-height: 40px; padding: 10px 12px; font-size: 12px; justify-content: center; }
+.orders-note { margin: 0; padding: 20px 24px; font-size: 12px; color: #756f63; }
+.catalog-page td { overflow-wrap: anywhere; }
+.notice-error { border-left: 4px solid #932e2e; }
+.catalog-page table { min-width: 900px; }
+.catalog-page th:first-child { width: 190px; }
+.catalog-page th:nth-child(2) { width: 190px; }
+.catalog-page th:nth-child(3) { width: 150px; }

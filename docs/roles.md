@@ -30,7 +30,7 @@ La modalidad identifica arreglos preparados, por encargo o ambas formas. Antes d
 5. Crea un producto Arreglos con cero existencias y elige Preparado, Por encargo o Ambas. Las unidades de arreglos se aumentan mediante elaboración, no desde la edición del stock.
 6. Usa **Componentes / Preparar** para elegir materiales y cantidades **por una unidad de arreglo**. No se permiten otros arreglos como materiales, cantidades cero ni materiales repetidos. Guardar componentes no descuenta stock. Modificar la lista cambia futuras elaboraciones; los movimientos anteriores conservan su detalle.
 7. **Preparar arreglos** (solo Administrador) consume materiales y suma unidades listas. Una venta Disponible de ese arreglo descuenta solo la unidad terminada.
-8. En Ventas, busca el código, elige la modalidad y agrega al pedido. Una venta Por encargo descuenta componentes al confirmar la elaboración/venta, sin añadir ni descontar unidades terminadas. No gestiona reservas, pedidos pendientes ni fechas de entrega.
+8. En Ventas, busca el código, elige la modalidad y agrega al pedido. Una venta Por encargo descuenta componentes al confirmar la elaboración/venta, sin añadir ni descontar unidades terminadas. Este flujo de venta directa no agenda entregas. Para registrar cliente y fecha de entrega usa Pedidos por encargo, descrito al final.
 9. Si falta un componente, la operación de esa línea no modifica ninguna existencia ni crea registros parciales. Cada línea del pedido se confirma por separado; si una falla, se conservan las pendientes. Un reintento de la misma línea no la cobra ni descuenta nuevamente. El pedido pendiente se conserva en esa pestaña del navegador y por usuario.
 10. En Registros consulta por fecha. Ver movimientos muestra cantidades consumidas o añadidas y el stock resultante; también se muestra tipo y responsable. El Cajero ve solo sus operaciones. Las ventas antiguas no se descuentan retroactivamente ni se les inventan componentes.
 
@@ -132,3 +132,22 @@ Con respaldo previo, actualiza archivos e importa **una sola vez** `App/migratio
 Los importes de ventas no equivalen a utilidad: todavía no se registran costos históricos de compra. La exportación CSV conserva decimales y moneda para revisarlos en Excel.
 
 Validación: `python3 tests/precios.py` prueba centavos exactos, cambios de precio, correcciones, reenvíos, cantidades grandes, monedas separadas y registros antiguos.
+
+
+## Pedidos por encargo
+
+Para actualizar una base existente, respáldala y ejecuta **una sola vez** `App/migrations/009_pedidos_encargo.sql` después de la 008. Conserva las ventas, productos y usuarios actuales. Las instalaciones nuevas ya incluyen estas tablas en `App/punto_de_venta.sql`: no apliques además la migración ni reimportes el volcado sobre datos existentes.
+
+En el menú, **Pedidos por encargo** abre la agenda y el formulario. Administrador y Cajero pueden registrar cliente, teléfono, arreglo, cantidad y fecha/hora futura de entrega (Ciudad de México). Solo aparecen arreglos con modalidad Por encargo o Ambas. El Administrador ve todos los pedidos; el Cajero consulta, cancela pendientes y entrega únicamente los que registró. La agenda se ordena por entrega y permite filtrar por estado.
+
+- **Pendiente:** guarda el encargo y el precio actual por unidad. No registra venta, reserva materiales ni descuenta existencias. El precio y nombre acordados se conservan aunque cambie el catálogo. Puede cancelarse sin mover stock.
+- **En preparación:** el Administrador pulsa **Preparar y registrar venta**. En una sola transacción se comprueban y consumen los componentes de la receta actual, se registra una única venta Por encargo con el precio acordado y se cambia el estado. No suma ni descuenta unidades de arreglos terminados. Esta es la fecha de registro de la venta en Reportes. Si falta cualquier material, no cambia ningún stock, venta ni estado; se puede reintentar después de reponerlo.
+- **Listo:** el Administrador confirma que terminó el arreglo. No registra otra venta ni mueve existencias.
+- **Entregado:** Administrador o Cajero responsable confirma la entrega de un pedido Listo. No vuelve a cobrar ni descontar componentes.
+- **Cancelado:** termina un pedido pendiente. Si ya comenzó la preparación, el Administrador debe corregir primero la cantidad completa de su venta desde **Revisar / corregir venta** y después pulsar **Cerrar pedido corregido**. La corrección exige elegir el tratamiento real de la mercancía: no se devuelven materiales automáticamente. El cierre no añade otro reintegro. Una corrección parcial bloquea Listo/Entregado hasta revisar y completar la corrección; no se entregan cantidades distintas silenciosamente.
+
+No registres de nuevo en Ventas un encargo creado desde esta agenda. La venta vinculada y sus movimientos aparecen en Registros y Reportes. Los registros anteriores no se convierten automáticamente en pedidos. El flujo no gestiona anticipos, cobros pendientes, reservas de stock ni edición de pedidos: si un pendiente tiene datos incorrectos, cancélalo y registra otro.
+
+Los estados avanzan en orden y los terminales no se reabren. Se guardan eventos de estado con responsable y hora. Las solicitudes llevan CSRF, versión del pedido y una clave de operación; el bloqueo transaccional del inventario evita descontar dos veces ante reenvíos, doble clic o preparación simultánea, incluso entre dos pedidos que necesitan los últimos materiales.
+
+Validación: `python3 tests/pedidos.py` usa la infraestructura de desarrollo de las pruebas existentes. Cubre datos inválidos, permisos, privacidad, HTML escapado, CSRF, cancelación, estados fuera de orden, precio acordado, reversión completa por falta de stock, reenvíos exactos y modificados, correcciones de venta y carreras con procesos PHP independientes. Usa datos temporales y los elimina al terminar; no ejecutarlo contra producción.

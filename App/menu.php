@@ -65,6 +65,7 @@ $currentUser = require_access(['Administrador', 'Cajero'], false);
                     </div>
                 </div>
                 <div class="menu-actions">
+                <a class="menu-action" href="./Pedidos/pedidos.php">Pedidos por encargo</a>
                 <?php if ($currentUser['rol'] === 'Administrador'): ?><a class="menu-action" href="./usuarios.php">Administrar usuarios</a><?php endif; ?>
                 <a class="menu-action" href="./backend/logout.php">Cerrar sesión</a>
                 </div>
