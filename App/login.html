@@ -1,36 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Iniciar sesión</title>
-
-        <link rel="stylesheet" href="./css/bootstrap.min.css">
-        <link rel="stylesheet" href="./css/styles.css">
-        <link rel="stylesheet" href="./css/login.css">
-    </head>
-    <body>
-        <div class="display-center">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h4 class="text-center">Inicio de sesión</h4>
-                </div>
-                <!-- <h2 class="text-primary text-center">Inicio de sesión</h1> -->
-                <div class="login-box">
-                    <form id="loginForm" action="login.php" method="post">
-                        <label for="username">Nombre de usuario</label>
-                        <input type="text" id="username" name="username" required>
-                    
-                        <label for="password">Contraseña</label>
-                        <input type="password" id="password" name="password" required>
-                    
-                        <input type="submit" value="Iniciar sesión">
-                        <!-- <a href="./menu.php">Saltar</a> -->
-                    </form>
-                </div>
-            </div>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión · Florería</title>
+    <link rel="stylesheet" href="./css/login.css?v=floreria-1">
+</head>
+<body>
+<main class="login-page">
+    <section class="login-card" aria-labelledby="login-title">
+        <div class="login-art">
+            <span class="eyebrow">FLORERÍA / INVENTARIO</span>
+            <svg class="login-flower" viewBox="0 0 220 245" fill="none" aria-hidden="true" focusable="false">
+<g stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+<path d="M112 230C114 185 112 142 110 104M112 204C76 192 58 172 54 143C86 148 109 168 112 204ZM113 176C146 163 161 143 164 116C134 121 115 145 113 176Z"/>
+<path d="M110 102C77 99 65 78 79 65C63 41 83 24 103 40C114 12 143 24 137 49C167 49 172 77 148 88C158 114 130 128 110 102Z"/>
+<path d="M110 102C100 88 93 78 99 63C113 64 123 77 119 91M119 91C133 81 139 69 137 49M79 65C92 65 100 72 105 82"/>
+<circle cx="113" cy="86" r="8"/>
+<path d="M91 233H138M100 240H130M67 211L78 204M154 199L163 205"/>
+</g></svg>
+            <div class="art-caption"><h2>Cada detalle<br>florece aquí<span>.</span></h2><p>Tu florería, en orden.</p></div>
         </div>
-        <script src="./js/login.js"></script>
-    </body>
+        <div class="login-panel">
+            <header><span class="eyebrow">BIENVENIDO</span><h1 id="login-title">Inicio de sesión<span>.</span></h1><p>Ingresa a tu espacio de trabajo.</p></header>
+            <form id="loginForm" action="login.php" method="post">
+                <div class="field"><label for="username">Nombre de usuario</label><input type="text" id="username" name="username" autocomplete="username" required></div>
+                <div class="field"><label for="password">Contraseña</label><input type="password" id="password" name="password" autocomplete="current-password" required></div>
+                <input type="submit" value="Iniciar sesión">
+            </form>
+            <p class="login-note">Productos, pedidos y existencias en un solo lugar.</p>
+        </div>
+    </section>
+</main>
+<script src="./js/login.js"></script>
+</body>
 </html>
