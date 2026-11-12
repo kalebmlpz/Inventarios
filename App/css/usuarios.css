@@ -52,7 +52,9 @@ h3 { margin: 0 0 10px; font-size: 14px; }
 .user-form h1 { margin: 0 0 24px; font-size: 20px; letter-spacing: 0; }
 
 .back-link[href$="menu.php"],
-.back-link[href$="menu.php"]:visited {
+.back-link[href$="menu.php"]:visited,
+.catalog-page > .back-link[href="consulta.php"],
+.catalog-page > .back-link[href="consulta.php"]:visited {
     min-height: 44px;
     padding: 8px 12px;
     margin-left: -12px;
@@ -61,7 +63,8 @@ h3 { margin: 0 0 10px; font-size: 14px; }
     background: transparent;
     color: #292823;
 }
-.back-link[href$="menu.php"]:hover {
+.back-link[href$="menu.php"]:hover,
+.catalog-page > .back-link[href="consulta.php"]:hover {
     background: #e9e6df;
     color: #292823;
     text-decoration: none;

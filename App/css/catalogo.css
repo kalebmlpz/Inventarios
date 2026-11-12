@@ -4,9 +4,9 @@
 .catalog-page a:hover,
 .catalog-page a:visited { text-decoration: none; }
 .back-link, .back-link:hover { color: #292823; }
-.catalog-page > .back-link:not([href$="menu.php"]),
-.catalog-page > .back-link:not([href$="menu.php"]):visited { min-height: 48px; padding: 12px 20px; border-radius: 6px; background: #1a1a1a; color: #fff; justify-content: center; }
-.catalog-page > .back-link:not([href$="menu.php"]):hover { background: #343a40; color: #fff; }
+.catalog-page > .back-link:not([href$="menu.php"]):not([href="consulta.php"]),
+.catalog-page > .back-link:not([href$="menu.php"]):not([href="consulta.php"]):visited { min-height: 48px; padding: 12px 20px; border-radius: 6px; background: #1a1a1a; color: #fff; justify-content: center; }
+.catalog-page > .back-link:not([href$="menu.php"]):not([href="consulta.php"]):hover { background: #343a40; color: #fff; }
 .catalog-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin: 12px 0 32px; }
 .eyebrow { font-size: 10px; letter-spacing: 1.8px; font-weight: 700; color: #756952; }
 .catalog-header h1 { font-family: Georgia, serif; font-size: clamp(30px, 4vw, 44px); font-weight: 400; letter-spacing: -1.7px; margin: 10px 0; }
