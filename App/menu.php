@@ -79,7 +79,10 @@ $currentUser = require_access(['Administrador', 'Cajero'], false);
                     </div>
                 </div>
                 <div class="menu-actions">
-                <?php if ($currentUser['rol'] === 'Administrador'): ?><a class="menu-action" href="./usuarios.php">Administrar usuarios</a><?php endif; ?>
+                <?php if ($currentUser['rol'] === 'Administrador'): ?><a class="menu-action users-action" href="./usuarios.php">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 4a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 4v3"/></svg>
+                    <span>Administrar usuarios</span>
+                </a><?php endif; ?>
                 <a class="menu-action logout-action" href="./backend/logout.php">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 4H4v16h6M9 12h12m-4-4 4 4-4 4"/></svg>
                     <span>Cerrar sesión</span>

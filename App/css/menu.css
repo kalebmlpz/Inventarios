@@ -186,3 +186,17 @@ a {
 .logout-action svg { width: 22px; height: 22px; flex-shrink: 0; }
 .menu-action.logout-action:hover { color: #fff; background: #a52a2a; border-color: #a52a2a; }
 .menu-action.logout-action:focus-visible { outline-color: #a52a2a; }
+
+.menu-action.users-action,
+.menu-action.users-action:visited {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #343a40;
+    border-color: transparent;
+    background: transparent;
+}
+.users-action svg { width: 22px; height: 22px; flex-shrink: 0; }
+.menu-action.users-action:hover { color: #343a40; background: #eceeef; border-color: transparent; }
+.menu-action.users-action:focus-visible { outline-color: #343a40; }
