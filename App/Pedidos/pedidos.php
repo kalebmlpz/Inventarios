@@ -31,7 +31,7 @@ if ($filter!=='') { $where[]='p.estado=?';$params[]=$filter; }
 $stmt=$conn->prepare('SELECT p.*,CAST(p.precio_unitario*p.cantidad AS DECIMAL(20,2)) AS importe,u.username, (SELECT COALESCE(SUM(r.cantidad),0) FROM registros r WHERE r.venta_origen_id=p.venta_id AND r.tipo IN (\'Cancelación\',\'Devolución\')) AS corregidas FROM pedidos p LEFT JOIN usuarios u ON u.id=p.usuario_id'.($where?' WHERE '.implode(' AND ',$where):'').' ORDER BY p.fecha_entrega,p.id');
 $stmt->execute($params);$orders=$stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pedidos por encargo · Florería</title><link rel="stylesheet" href="../css/usuarios.css"><link rel="stylesheet" href="../css/catalogo.css"><link rel="stylesheet" href="../css/pedidos.css"></head>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pedidos por encargo · Florería</title><link rel="stylesheet" href="../css/usuarios.css?v=<?= filemtime(__DIR__ . '/../css/usuarios.css') ?>"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__ . '/../css/catalogo.css') ?>"><link rel="stylesheet" href="../css/pedidos.css"></head>
 <body><main class="catalog-page">
 <a class="back-link" href="../menu.php">Volver al menú</a>
 <header class="catalog-header"><div><span class="eyebrow">FLORERÍA / ENCARGOS</span><h1>Pedidos por encargo<span class="title-dot">.</span></h1><p>Organiza los arreglos y sus entregas. <?= $user['rol']==='Administrador'?'Consulta todos los pedidos.':'Consulta los pedidos que registraste.' ?></p></div></header>

@@ -22,7 +22,7 @@ if (($_GET['exportar']??'')==='csv' && $error==='') {
 }
 $export='reportes.php?'.http_build_query(['desde'=>$start,'hasta'=>$end,'reporte'=>$kind,'exportar'=>'csv']);
 ?>
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reportes · Florería</title><link rel="stylesheet" href="../css/usuarios.css"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__.'/../css/catalogo.css') ?>"></head><body><main class="catalog-page">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reportes · Florería</title><link rel="stylesheet" href="../css/usuarios.css?v=<?= filemtime(__DIR__ . '/../css/usuarios.css') ?>"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__.'/../css/catalogo.css') ?>"></head><body><main class="catalog-page">
 <a class="back-link" href="../menu.php">Volver al menú</a>
 <header class="catalog-header"><div><span class="eyebrow">FLORERÍA / ADMINISTRACIÓN</span><h1>Reportes</h1><p>Consulta la actividad de tu florería y descarga sus registros.</p></div></header>
 <?php if ($error): ?><p class="notice notice-error" role="alert"><?= esc($error) ?></p><?php endif; ?>

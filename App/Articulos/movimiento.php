@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $stmt = $conn->query("SELECT id_articulo, sku, nombre, unidad, stock FROM articulo" . ($type === 'entrada' ? " WHERE categoria <> 'Arreglos'" : '') . ' ORDER BY nombre');
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title><?= esc($title) ?> · Florería</title><link rel="stylesheet" href="../css/usuarios.css"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__.'/../css/catalogo.css') ?>"></head>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title><?= esc($title) ?> · Florería</title><link rel="stylesheet" href="../css/usuarios.css?v=<?= filemtime(__DIR__ . '/../css/usuarios.css') ?>"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__.'/../css/catalogo.css') ?>"></head>
 <body><main class="catalog-page movement-page">
 <a class="back-link" href="consulta.php">Volver al catálogo</a>
 <header class="catalog-header"><div><span class="eyebrow">FLORERÍA / EXISTENCIAS</span><h1><?= esc($title) ?></h1><p><?= $type === 'entrada' ? 'Recibe mercancía y suma unidades a tu inventario.' : 'Registra las pérdidas para mantener tus existencias al día.' ?></p></div></header>

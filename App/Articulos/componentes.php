@@ -60,7 +60,7 @@ $materials=$conn->query("SELECT * FROM articulo WHERE categoria <> 'Arreglos' OR
 $stmt=$conn->prepare('SELECT componente_id,cantidad FROM componentes WHERE arreglo_id=? ORDER BY componente_id'); $stmt->execute([$id]); $recipe=$stmt->fetchAll(PDO::FETCH_ASSOC);
 if (!$recipe) $recipe=[['componente_id'=>'','cantidad'=>1]];
 ?>
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Componentes del arreglo</title><link rel="stylesheet" href="../css/usuarios.css"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__.'/../css/catalogo.css') ?>"></head><body><main class="catalog-page">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Componentes del arreglo</title><link rel="stylesheet" href="../css/usuarios.css?v=<?= filemtime(__DIR__ . '/../css/usuarios.css') ?>"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__.'/../css/catalogo.css') ?>"></head><body><main class="catalog-page">
 <a class="back-link" href="consulta.php">Volver al catálogo</a>
 <header class="catalog-header"><div><span class="eyebrow">FLORERÍA / ARREGLOS</span><h1><?= esc($product['nombre']) ?></h1><p><?= esc($product['stock']) ?> arreglos listos · <?= esc($product['modalidad']) ?></p></div></header>
 <?php if ($message): ?><p class="notice" role="status"><?= esc($message) ?></p><?php endif; ?>

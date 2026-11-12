@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
     $sale=saleForCorrection($conn,$id);
 }
 ?>
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cancelar o devolver · Florería</title><link rel="stylesheet" href="../css/usuarios.css"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__.'/../css/catalogo.css') ?>"></head><body><main class="catalog-page movement-page">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cancelar o devolver · Florería</title><link rel="stylesheet" href="../css/usuarios.css?v=<?= filemtime(__DIR__ . '/../css/usuarios.css') ?>"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__.'/../css/catalogo.css') ?>"></head><body><main class="catalog-page movement-page">
 <a class="back-link" href="registros.php?fecha=<?= esc($sale['fecha']) ?>">Volver a Registros</a>
 <header class="catalog-header"><div><span class="eyebrow">FLORERÍA / CORRECCIONES</span><h1>Cancelar o devolver</h1><p>Venta #<?= (int)$sale['id'] ?> · <?= esc($sale['nombre_snapshot'] ?? 'Código '.$sale['sku']) ?> · <?= esc($sale['fecha']) ?></p></div></header>
 <p class="notice">Vendidas: <?= (int)$sale['cantidad'] ?> · Corregidas: <?= (int)$sale['cantidad_corregida'] ?> · Pendientes: <?= (int)$sale['pendientes'] ?></p>

@@ -38,7 +38,7 @@ $stmt=$conn->prepare('SELECT id,username,rol,activo,version_sesion FROM usuarios
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Administrar usuarios · Florería</title>
-    <link rel="stylesheet" href="css/usuarios.css">
+    <link rel="stylesheet" href="css/usuarios.css?v=<?= filemtime(__DIR__ . '/css/usuarios.css') ?>">
     <link rel="stylesheet" href="css/catalogo.css?v=<?= filemtime(__DIR__.'/css/catalogo.css') ?>">
     <link rel="stylesheet" href="css/cuentas.css?v=<?= filemtime(__DIR__.'/css/cuentas.css') ?>">
 </head>
