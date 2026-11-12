@@ -43,13 +43,12 @@ $stmt=$conn->prepare('SELECT id,username,rol,activo,version_sesion FROM usuarios
     <link rel="stylesheet" href="css/cuentas.css?v=<?= filemtime(__DIR__.'/css/cuentas.css') ?>">
 </head>
 <body>
-<main class="catalog-page accounts-page <?= $showForm?'movement-page':'' ?>">
+<main class="catalog-page clean-workspace accounts-page <?= $showForm?'movement-page':'' ?>">
     <a class="back-link" href="<?= $showForm?'usuarios.php':'menu.php' ?>"><?= $showForm?'Volver a usuarios':'Volver al menú' ?></a>
     <header class="catalog-header">
         <div>
             <span class="eyebrow">FLORERÍA / ADMINISTRACIÓN</span>
             <h1><?= $showForm?($isEditing?'Editar cuenta':'Crear usuario'):'Administrar usuarios' ?></h1>
-            <p><?= $showForm?'Configura el acceso de esta persona.':'Gestiona quién tiene acceso a tu florería.' ?></p>
         </div>
         <?php if (!$showForm): ?><a class="action" href="usuarios.php?nuevo=1">Nuevo usuario</a><?php endif; ?>
     </header>
@@ -92,7 +91,6 @@ $stmt=$conn->prepare('SELECT id,username,rol,activo,version_sesion FROM usuarios
             <div class="field account-password">
                 <label for="new-password">Contraseña</label>
                 <input id="new-password" name="password" type="password" minlength="8" maxlength="72" autocomplete="new-password" required placeholder="Al menos 8 caracteres">
-                <small>Combina letras, números y símbolos.</small>
             </div>
             <?php endif; ?>
             <div class="form-actions">

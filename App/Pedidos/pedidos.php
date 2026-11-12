@@ -31,10 +31,10 @@ if ($filter!=='') { $where[]='p.estado=?';$params[]=$filter; }
 $stmt=$conn->prepare('SELECT p.*,CAST(p.precio_unitario*p.cantidad AS DECIMAL(20,2)) AS importe,u.username, (SELECT COALESCE(SUM(r.cantidad),0) FROM registros r WHERE r.venta_origen_id=p.venta_id AND r.tipo IN (\'Cancelación\',\'Devolución\')) AS corregidas FROM pedidos p LEFT JOIN usuarios u ON u.id=p.usuario_id'.($where?' WHERE '.implode(' AND ',$where):'').' ORDER BY p.fecha_entrega,p.id');
 $stmt->execute($params);$orders=$stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pedidos por encargo · Florería</title><link rel="stylesheet" href="../css/usuarios.css?v=<?= filemtime(__DIR__ . '/../css/usuarios.css') ?>"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__ . '/../css/catalogo.css') ?>"><link rel="stylesheet" href="../css/pedidos.css"></head>
-<body><main class="catalog-page">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pedidos por encargo · Florería</title><link rel="stylesheet" href="../css/usuarios.css?v=<?= filemtime(__DIR__ . '/../css/usuarios.css') ?>"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__ . '/../css/catalogo.css') ?>"><link rel="stylesheet" href="../css/pedidos.css?v=<?= filemtime(__DIR__ . '/../css/pedidos.css') ?>"></head>
+<body><main class="catalog-page clean-workspace">
 <a class="back-link" href="../menu.php">Volver al menú</a>
-<header class="catalog-header"><div><span class="eyebrow">FLORERÍA / ENCARGOS</span><h1>Pedidos por encargo<span class="title-dot">.</span></h1><p>Organiza los arreglos y sus entregas. <?= $user['rol']==='Administrador'?'Consulta todos los pedidos.':'Consulta los pedidos que registraste.' ?></p></div></header>
+<header class="catalog-header"><div><span class="eyebrow">FLORERÍA / ENCARGOS</span><h1>Pedidos por encargo<span class="title-dot">.</span></h1><p><?= $user['rol']==='Administrador'?'Consulta todos los pedidos.':'Consulta los pedidos que registraste.' ?></p></div></header>
 <?php if ($message): ?><p class="notice notice-success" role="status"><?= esc($message) ?></p><?php endif; ?>
 <?php if ($error): ?><p class="notice notice-error" role="alert"><?= esc($error) ?></p><?php endif; ?>
 <section class="user-card catalog-list"><div class="list-heading"><h2>Nuevo pedido</h2></div>
@@ -47,17 +47,17 @@ $stmt->execute($params);$orders=$stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="field"><label for="cantidad">Cantidad de arreglos</label><input id="cantidad" name="cantidad" type="number" min="1" max="2147483647" step="1" value="<?= esc($values['cantidad']) ?>" required></div>
 <div class="field"><label for="fecha_entrega">Fecha y hora de entrega</label><input id="fecha_entrega" name="fecha_entrega" type="datetime-local" value="<?= esc($values['fecha_entrega']) ?>" required><small>Hora de Ciudad de México.</small></div>
 </div>
-<p class="field-note">Al registrar se guarda el precio actual. El pedido no reserva materiales. El Administrador inicia la preparación: registra la venta y descuenta componentes una sola vez. No registres este encargo nuevamente desde Ventas.</p>
+<p class="field-note">Preparar registra la venta y descuenta materiales una sola vez. No vuelvas a registrar este encargo desde Ventas.</p><details class="screen-help"><summary>Precio y existencias</summary><p>Se conserva el precio al registrar el pedido. Los materiales no se reservan; se comprueban al iniciar la preparación.</p></details>
 <div class="form-actions"><button <?= !$products?'disabled':'' ?>>Registrar pedido pendiente</button></div>
 <?php if (!$products): ?><p>No hay arreglos para encargos. Configúralos desde Productos y existencias.</p><?php endif; ?>
 </form></section>
 <section class="user-card catalog-list"><div class="list-heading"><h2>Agenda de entregas</h2></div>
 <form method="get" class="search"><label for="estado">Estado del pedido</label><div><select id="estado" name="estado"><option value="">Todos los estados</option><?php foreach (orderStates() as $state): ?><option <?= $state===$filter?'selected':'' ?>><?= esc($state) ?></option><?php endforeach; ?></select><button>Filtrar</button></div></form>
-<div class="table-wrap"><table><thead><tr><th>Pedido / cliente</th><th>Arreglo</th><th>Entrega</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+<div class="table-wrap"><table><thead><tr><th>Pedido / cliente</th><th>Arreglo</th><th>Entrega · CDMX</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
 <?php foreach ($orders as $order): ?>
 <tr><td><strong>#<?= (int)$order['id'] ?> · <?= esc($order['cliente']) ?></strong><small><?= esc($order['telefono']) ?></small><small>Registró: <?= esc($order['username']??'Usuario anterior') ?></small></td>
 <td><?= esc($order['nombre_snapshot']) ?><small><?= (int)$order['cantidad'] ?> arreglo(s) · <?= esc(moneyAmount($order['precio_unitario'])) ?> MXN c/u</small><small>Total acordado: <?= esc(moneyAmount($order['importe'])) ?> MXN</small></td>
-<td><?= esc(date('d/m/Y H:i',strtotime($order['fecha_entrega']))) ?><small>Ciudad de México</small></td>
+<td><?= esc(date('d/m/Y H:i',strtotime($order['fecha_entrega']))) ?></td>
 <td><span class="order-state"><?= esc($order['estado']) ?></span><?php if ($order['venta_id']): ?><small>Venta #<?= (int)$order['venta_id'] ?> · existencias ya descontadas</small><?php endif; ?><?php if ($order['corregidas']): ?><small>Unidades corregidas: <?= (int)$order['corregidas'] ?></small><?php endif; ?></td>
 <td><div class="order-actions">
 <?php
@@ -77,5 +77,5 @@ foreach ($actions as $target=>$label): ?>
 <?php endforeach; ?>
 <?php if (!$orders): ?><tr><td colspan="5">No hay pedidos para esta consulta.</td></tr><?php endif; ?>
 </tbody></table></div>
-<p class="orders-note">Listo y Entregado no descuentan existencias. Para cancelar después de iniciar la preparación, el Administrador debe corregir toda la venta desde Registros y después cerrar el pedido. El cierre no devuelve materiales por sí mismo.</p>
+<details class="screen-help orders-help"><summary>Entregas y cancelaciones</summary><p>Listo y Entregado no descuentan existencias. Para cancelar después de iniciar la preparación, el Administrador debe corregir toda la venta desde Registros y después cerrar el pedido. El cierre no devuelve materiales por sí mismo.</p></details>
 </section></main></body></html>

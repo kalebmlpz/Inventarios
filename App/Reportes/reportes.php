@@ -22,9 +22,9 @@ if (($_GET['exportar']??'')==='csv' && $error==='') {
 }
 $export='reportes.php?'.http_build_query(['desde'=>$start,'hasta'=>$end,'reporte'=>$kind,'exportar'=>'csv']);
 ?>
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reportes · Florería</title><link rel="stylesheet" href="../css/usuarios.css?v=<?= filemtime(__DIR__ . '/../css/usuarios.css') ?>"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__.'/../css/catalogo.css') ?>"></head><body><main class="catalog-page">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reportes · Florería</title><link rel="stylesheet" href="../css/usuarios.css?v=<?= filemtime(__DIR__ . '/../css/usuarios.css') ?>"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__.'/../css/catalogo.css') ?>"></head><body><main class="catalog-page clean-workspace">
 <a class="back-link" href="../menu.php">Volver al menú</a>
-<header class="catalog-header"><div><span class="eyebrow">FLORERÍA / ADMINISTRACIÓN</span><h1>Reportes</h1><p>Consulta la actividad de tu florería y descarga sus registros.</p></div></header>
+<header class="catalog-header"><div><span class="eyebrow">FLORERÍA / ADMINISTRACIÓN</span><h1>Reportes</h1></div></header>
 <?php if ($error): ?><p class="notice notice-error" role="alert"><?= esc($error) ?></p><?php endif; ?>
 <section class="user-card"><form class="search report-filter" method="get"><div>
 <div><label for="desde">Desde</label><input id="desde" name="desde" type="date" value="<?= esc($start) ?>" required></div>
@@ -33,7 +33,7 @@ $export='reportes.php?'.http_build_query(['desde'=>$start,'hasta'=>$end,'reporte
 <button>Consultar</button></div></form></section>
 <?php if ($error===''): ?>
 <section class="user-card catalog-list"><div class="list-heading"><div><h2><?= esc($definition['titulo']) ?></h2><p class="catalog-result-count"><?= count($rows) ?> <?= count($rows)===1?'fila':'filas' ?> · <?= esc($start) ?> a <?= esc($end) ?></p></div><a class="action" href="<?= esc($export) ?>">Descargar CSV</a></div>
-<p class="report-note"><?= esc($definition['nota']) ?> Las unidades sin dato histórico se indican como “Sin unidad registrada”.</p>
+<details class="screen-help report-help"><summary>Cómo interpretar este reporte</summary><p><?= esc($definition['nota']) ?> Las unidades sin dato histórico se indican como “Sin unidad registrada”.</p></details>
 <?php if ($kind==='importes'): ?>
 <?php if ($summary['sin_precio']>0): ?><p class="report-note"><?= (int)$summary['sin_precio'] ?> <?= $summary['sin_precio']===1?'venta sin precio histórico; no se incluye':'ventas sin precio histórico; no se incluyen' ?> en los totales de dinero. No se usa el precio actual para completarlas.</p><?php endif; ?>
 <?php foreach ($summary['totales'] as $total): ?><div class="money-summary"><?php foreach (['bruto'=>'Importe bruto','corregido'=>'Importe corregido','neto'=>'Importe neto'] as $field=>$label): ?><div><small><?= $label ?> · <?= esc($total['moneda']) ?></small><strong><?= esc(moneyAmount($total[$field])) ?></strong></div><?php endforeach; ?></div><?php endforeach; ?>
