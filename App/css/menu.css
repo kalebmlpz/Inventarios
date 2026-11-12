@@ -172,3 +172,17 @@ a {
 .menu > a:focus-visible { outline: 2px solid var(--principal-color); outline-offset: 4px; }
 @media (max-width: 1000px) { .menu, .menu-admin { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .menu, .menu-admin { grid-template-columns: 1fr; } }
+
+.menu-action.logout-action,
+.menu-action.logout-action:visited {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #a52a2a;
+    border-color: #dbaaaa;
+    background: #fff5f5;
+}
+.logout-action svg { width: 22px; height: 22px; flex-shrink: 0; }
+.menu-action.logout-action:hover { color: #fff; background: #a52a2a; border-color: #a52a2a; }
+.menu-action.logout-action:focus-visible { outline-color: #a52a2a; }
