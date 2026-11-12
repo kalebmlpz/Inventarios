@@ -162,3 +162,27 @@ input[readonly] { background: #f3f0e8; color: #6d665b; }
 .inventory-catalog .delete-product:hover { background: #faeeea; }
 @media(max-width:1000px) { .inventory-catalog .list-heading { align-items: flex-start; flex-direction: column; } .inventory-catalog .catalog-actions { justify-content: flex-start; } }
 @media(max-width:650px) { .inventory-catalog .list-heading { padding: 24px 20px; } .inventory-catalog .catalog-filter { padding: 20px; } .inventory-catalog .list-heading h2 { font-size: 27px; } }
+
+/* Formularios de inventario: mismos tonos y controles que el catálogo. */
+.inventory-editor { display: block; max-width: 1000px; border-radius: 18px; box-shadow: 0 10px 36px #463d2c06; }
+.inventory-editor .product-form { padding: 32px 36px; }
+.inventory-editor fieldset { margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid #ece7dc; }
+.inventory-editor legend { font-family: Georgia, serif; font-size: 22px; font-weight: 400; margin-bottom: 22px; }
+.inventory-editor #detalles { border-bottom: 0; margin-bottom: 0; }
+.inventory-editor label, .inventory-movement label { font-size: 12px; color: #655e52; }
+.inventory-editor input, .inventory-editor select, .inventory-editor textarea,
+.inventory-movement input, .inventory-movement select, .inventory-movement textarea { background: #fffefa; border-color: #dfd9cd; }
+.inventory-editor .field-note, .inventory-movement .field-note { font-size: 11px; color: #756e61; }
+.inventory-editor .form-actions, .inventory-movement .form-actions { border-top: 1px solid #ece7dc; padding-top: 24px; margin-top: 8px; }
+.inventory-editor .form-actions > .back-link, .inventory-movement .form-actions > .back-link { padding: 10px 14px; border-radius: 6px; }
+.inventory-editor .form-actions > .back-link:hover, .inventory-movement .form-actions > .back-link:hover { background: #f1eee5; }
+.inventory-editor .form-actions button, .inventory-movement .form-actions button { padding: 12px 22px; min-height: 44px; }
+.inventory-form-card { background: #fffefa; border: 1px solid #dfd9cd; border-radius: 18px; box-shadow: 0 10px 36px #463d2c06; }
+.inventory-movement .product-form { padding: 32px 36px; }
+.inventory-movement .product-form > .field:first-of-type { padding-bottom: 26px; margin-bottom: 26px; border-bottom: 1px solid #ece7dc; }
+.inventory-movement .product-form > .field-note { margin-top: 20px; padding: 12px 14px; background: #f7f5ef; border-radius: 6px; }
+@media(max-width:650px) { .inventory-editor .product-form, .inventory-movement .product-form { padding: 24px 20px; } .inventory-editor legend { font-size: 21px; } }
+
+.product-form-header { max-width: 1000px; align-items: center; }
+.header-flower { display: block; width: 82px; height: 92px; color: #918674; flex: 0 0 auto; }
+@media(max-width:650px) { .product-form-header { gap: 12px; } .header-flower { width: 56px; height: 68px; } }

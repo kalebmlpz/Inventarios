@@ -92,29 +92,21 @@ $showForm = $admin && ($editing || basename($_SERVER['SCRIPT_NAME']) === 'alta.p
 <!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Productos y existencias · Florería</title><link rel="stylesheet" href="../css/usuarios.css?v=<?= filemtime(__DIR__ . '/../css/usuarios.css') ?>"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__ . '/../css/catalogo.css') ?>"></head>
 <body><main class="catalog-page">
 <a class="back-link" href="<?= $showForm ? 'consulta.php' : '../menu.php' ?>"><?= $showForm ? 'Volver al catálogo' : 'Volver al menú' ?></a>
-<header class="catalog-header"><div><span class="eyebrow">FLORERÍA / INVENTARIO</span><h1>Productos y existencias<span class="title-dot">.</span></h1><p>Todo lo que necesitas para dar vida a cada arreglo.</p></div></header>
-<?php if (isset($_GET['guardado'])): ?><p class="notice notice-success" role="status">Producto guardado correctamente.</p><?php endif; ?>
-<?php if (isset($_GET['eliminado'])): ?><p class="notice notice-success" role="status">Producto eliminado del catálogo. Su historial de ventas se conserva.</p><?php endif; ?>
-<?php if (isset($_SESSION['stock_movement_message'])): ?><p class="notice notice-success" role="status"><?= esc($_SESSION['stock_movement_message']) ?></p><?php unset($_SESSION['stock_movement_message']); endif; ?>
-<?php if ($message): ?><p class="notice notice-error" role="alert"><?= esc($message) ?></p><?php endif; ?>
-<?php if ($showForm): ?>
-<section class="product-editor">
-<aside class="editor-aside">
-<span class="eyebrow">TU CATÁLOGO, EN ORDEN</span>
-<svg class="botanical" viewBox="0 0 220 245" fill="none" aria-hidden="true">
+<header class="catalog-header <?= $showForm ? 'product-form-header' : '' ?>"><div><span class="eyebrow">FLORERÍA / INVENTARIO</span><h1><?= $showForm ? ($editing ? 'Editar producto' : 'Nuevo producto') : 'Productos y existencias' ?><span class="title-dot">.</span></h1><?php if (!$showForm): ?><p>Todo lo que necesitas para dar vida a cada arreglo.</p><?php endif; ?></div><?php if ($showForm): ?><svg class="header-flower" viewBox="0 0 220 245" fill="none" aria-hidden="true" focusable="false">
 <g stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
 <path d="M112 230C114 185 112 142 110 104M112 204C76 192 58 172 54 143C86 148 109 168 112 204ZM113 176C146 163 161 143 164 116C134 121 115 145 113 176Z"/>
 <path d="M110 102C77 99 65 78 79 65C63 41 83 24 103 40C114 12 143 24 137 49C167 49 172 77 148 88C158 114 130 128 110 102Z"/>
 <path d="M110 102C100 88 93 78 99 63C113 64 123 77 119 91M119 91C133 81 139 69 137 49M79 65C92 65 100 72 105 82"/>
 <circle cx="113" cy="86" r="8"/>
 <path d="M91 233H138M100 240H130M67 211L78 204M154 199L163 205"/>
-</g></svg>
-<h2><?= $editing ? 'Un detalle hace la diferencia.' : 'Un nuevo detalle para tu florería.' ?></h2>
-<p>Organiza cada flor y cada material desde su primera entrada al catálogo.</p>
-
-</aside>
+</g></svg><?php endif; ?></header>
+<?php if (isset($_GET['guardado'])): ?><p class="notice notice-success" role="status">Producto guardado correctamente.</p><?php endif; ?>
+<?php if (isset($_GET['eliminado'])): ?><p class="notice notice-success" role="status">Producto eliminado del catálogo. Su historial de ventas se conserva.</p><?php endif; ?>
+<?php if (isset($_SESSION['stock_movement_message'])): ?><p class="notice notice-success" role="status"><?= esc($_SESSION['stock_movement_message']) ?></p><?php unset($_SESSION['stock_movement_message']); endif; ?>
+<?php if ($message): ?><p class="notice notice-error" role="alert"><?= esc($message) ?></p><?php endif; ?>
+<?php if ($showForm): ?>
+<section class="product-editor inventory-editor">
 <form method="post" class="product-form">
-<div class="form-heading"><h2><?= $editing ? 'Editar producto' : 'Nuevo producto' ?></h2></div>
 <input type="hidden" name="csrf" value="<?= esc($_SESSION['csrf']) ?>"><input type="hidden" name="id" value="<?= esc($editing['id_articulo'] ?? 0) ?>">
 <?php
 function catalogInput($key, $label, $type, $min, $editing, $placeholder = '') {
@@ -130,7 +122,7 @@ function catalogSelect($key, $label, $options, $editing) { ?>
 </div></fieldset>
 <fieldset id="existencias"><legend>Existencias y precio</legend><div class="form-grid stock-grid">
 <?php catalogInput('stock','Disponibles','number',0,$editing); catalogInput('stock_minimo','Stock mínimo','number',0,$editing); catalogInput('precio','Precio por unidad','number',0,$editing); ?>
-</div><p class="field-note">Las cantidades iniciales se indican al crear el material. Después, usa Registrar entrada o Registrar merma; para arreglos, Componentes / Preparar.</p></fieldset>
+</div><p class="field-note">El stock inicial solo se registra al crear materiales. Para cambios posteriores usa Entrada o Merma; los arreglos se elaboran desde Componentes / Preparar.</p></fieldset>
 <fieldset id="detalles"><legend>Información adicional</legend>
 <div id="arreglo-options">
 <?php catalogSelect('modalidad','Modalidad del arreglo',$modalidades,$editing); ?>
