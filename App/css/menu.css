@@ -218,4 +218,4 @@ body { margin: 0; }
 .menu-action { font-size: 13px; }
 .menu > a { border-radius: 14px; }
 @media(max-width:560px) { .menu-heading { align-items: flex-start; gap: 12px; } .menu-role { font-size: 10px; padding: 7px 9px; } .menu { padding: 14px; gap: 12px; } }
-@media(prefers-reduced-motion:reduce) { .menu-item { transition: none; } .menu-item:hover { transform: none; } }
+@media(prefers-reduced-motion:reduce) { .menu-item { transition: none; } }
