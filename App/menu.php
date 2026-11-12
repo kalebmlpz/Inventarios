@@ -40,6 +40,20 @@ $currentUser = require_access(['Administrador', 'Cajero'], false);
                             </div>
                         </a>
     
+                        <a href="./Pedidos/pedidos.php">
+                            <div class="menu-item">
+                                <div class="dis-block">
+                                    <svg class="reports-icon" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                        <rect x="12" y="18" width="76" height="72" rx="5"/>
+                                        <path d="M12 36h76M30 10v16M70 10v16M50 73v10M50 80l-10-5"/>
+                                        <path d="M50 51c-13-15-24 2-12 9-12 10 3 23 12 11 9 12 24-1 12-11 12-7 1-24-12-9z"/>
+                                        <circle cx="50" cy="62" r="5"/>
+                                    </svg>
+                                    <h3 class="text-center">Pedidos por encargo</h3>
+                                </div>
+                            </div>
+                        </a>
+
                         <a href="./Registros/registros.php">
                             <div class="menu-item">
                                 <div class="dis-block">
@@ -65,7 +79,6 @@ $currentUser = require_access(['Administrador', 'Cajero'], false);
                     </div>
                 </div>
                 <div class="menu-actions">
-                <a class="menu-action" href="./Pedidos/pedidos.php">Pedidos por encargo</a>
                 <?php if ($currentUser['rol'] === 'Administrador'): ?><a class="menu-action" href="./usuarios.php">Administrar usuarios</a><?php endif; ?>
                 <a class="menu-action" href="./backend/logout.php">Cerrar sesión</a>
                 </div>
