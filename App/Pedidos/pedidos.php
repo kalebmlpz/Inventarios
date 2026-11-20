@@ -38,9 +38,15 @@ if ($showAgenda) {
 ?>
 <!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pedidos por encargo · Florería</title><link rel="stylesheet" href="../css/usuarios.css?v=<?= filemtime(__DIR__ . '/../css/usuarios.css') ?>"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__ . '/../css/catalogo.css') ?>"><link rel="stylesheet" href="../css/pedidos.css?v=<?= filemtime(__DIR__ . '/../css/pedidos.css') ?>"></head>
 <body><main class="catalog-page clean-workspace">
+<?php if ($showAgenda): ?>
+<a class="back-link" href="pedidos.php">Volver a pedidos</a>
+<?php else: ?>
 <a class="back-link" href="../menu.php">Volver al menú</a>
+<?php endif; ?>
 <header class="catalog-header orders-header"><div><span class="eyebrow">FLORERÍA / ENCARGOS</span><h1>Pedidos por encargo<span class="title-dot">.</span></h1><p><?= $user['rol']==='Administrador'?'Consulta todos los pedidos.':'Consulta los pedidos que registraste.' ?></p></div>
-<a class="action" href="<?= $showAgenda?'pedidos.php':'pedidos.php?vista=agenda' ?>"><?= $showAgenda?'Nuevo pedido':'Agenda de entregas' ?></a>
+<?php if (!$showAgenda): ?>
+<a class="action" href="pedidos.php?vista=agenda">Agenda de entregas</a>
+<?php endif; ?>
 </header>
 <?php if ($message): ?><p class="notice notice-success" role="status"><?= esc($message) ?></p><?php endif; ?>
 <?php if ($error): ?><p class="notice notice-error" role="alert"><?= esc($error) ?></p><?php endif; ?>
