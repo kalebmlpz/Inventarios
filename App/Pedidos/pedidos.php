@@ -6,53 +6,48 @@ function esc($value) { return htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8'
 if (empty($_SESSION['csrf'])) $_SESSION['csrf']=operationToken();
 $conn=inventoryDb();$error='';
 $values=['cliente'=>'','telefono'=>'','articulo_id'=>'','cantidad'=>'1','fecha_entrega'=>'','operacion_id'=>operationToken()];
+$action=$_POST['accion']??'';
+$showAgenda=($_GET['vista']??'')==='agenda' || array_key_exists('estado',$_GET) || $action==='estado';
 if ($_SERVER['REQUEST_METHOD']==='POST') {
     csrfCheck();
     try {
-        if (($_POST['accion']??'')==='crear') {
+        if ($action==='crear') {
             foreach ($values as $key=>$value) $values[$key]=is_string($_POST[$key]??null)?$_POST[$key]:'';
             $id=createOrder($conn,$user,$_POST);
             $_SESSION['pedido_message']='Pedido #'.$id.' registrado. Todavía no se descontaron existencias.';
-        } elseif (($_POST['accion']??'')==='estado') {
+        } elseif ($action==='estado') {
             transitionOrder($conn,$user,$_POST);
             $_SESSION['pedido_message']='Estado del pedido actualizado.';
         } else throw new DomainException('Acción no permitida.');
-        header('Location: pedidos.php',true,303);exit;
+        header('Location: '.($action==='estado'?'pedidos.php?vista=agenda':'pedidos.php'),true,303);exit;
     } catch (DomainException $e) { http_response_code(422);$error=$e->getMessage(); }
       catch (PDOException $e) { http_response_code(500);$error='No se pudo guardar el pedido. Comprueba la actualización de la base de datos.'; }
 }
 $message=$_SESSION['pedido_message']??'';unset($_SESSION['pedido_message']);
-$filter=is_string($_GET['estado']??null)?$_GET['estado']:'';
-if ($filter!=='' && !in_array($filter,orderStates(),true)) { http_response_code(400);$error='Filtro de estado no válido.';$filter=''; }
-$products=$conn->query("SELECT id_articulo,nombre,precio FROM articulo WHERE categoria='Arreglos' AND modalidad IN ('Por encargo','Ambas') ORDER BY nombre")->fetchAll(PDO::FETCH_ASSOC);
-$where=[];$params=[];
-if ($user['rol']!=='Administrador') { $where[]='p.usuario_id=?';$params[]=$user['id']; }
-if ($filter!=='') { $where[]='p.estado=?';$params[]=$filter; }
-$stmt=$conn->prepare('SELECT p.*,CAST(p.precio_unitario*p.cantidad AS DECIMAL(20,2)) AS importe,u.username, (SELECT COALESCE(SUM(r.cantidad),0) FROM registros r WHERE r.venta_origen_id=p.venta_id AND r.tipo IN (\'Cancelación\',\'Devolución\')) AS corregidas FROM pedidos p LEFT JOIN usuarios u ON u.id=p.usuario_id'.($where?' WHERE '.implode(' AND ',$where):'').' ORDER BY p.fecha_entrega,p.id');
-$stmt->execute($params);$orders=$stmt->fetchAll(PDO::FETCH_ASSOC);
+if ($showAgenda) {
+    $filter=is_string($_GET['estado']??null)?$_GET['estado']:'';
+    if ($filter!=='' && !in_array($filter,orderStates(),true)) { http_response_code(400);$error='Filtro de estado no válido.';$filter=''; }
+    $where=[];$params=[];
+    if ($user['rol']!=='Administrador') { $where[]='p.usuario_id=?';$params[]=$user['id']; }
+    if ($filter!=='') { $where[]='p.estado=?';$params[]=$filter; }
+    $stmt=$conn->prepare('SELECT p.*,CAST(p.precio_unitario*p.cantidad AS DECIMAL(20,2)) AS importe,u.username, (SELECT COALESCE(SUM(r.cantidad),0) FROM registros r WHERE r.venta_origen_id=p.venta_id AND r.tipo IN (\'Cancelación\',\'Devolución\')) AS corregidas FROM pedidos p LEFT JOIN usuarios u ON u.id=p.usuario_id'.($where?' WHERE '.implode(' AND ',$where):'').' ORDER BY p.fecha_entrega,p.id');
+    $stmt->execute($params);$orders=$stmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    $products=$conn->query("SELECT id_articulo,nombre,precio FROM articulo WHERE categoria='Arreglos' AND modalidad IN ('Por encargo','Ambas') ORDER BY nombre")->fetchAll(PDO::FETCH_ASSOC);
+}
 ?>
 <!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pedidos por encargo · Florería</title><link rel="stylesheet" href="../css/usuarios.css?v=<?= filemtime(__DIR__ . '/../css/usuarios.css') ?>"><link rel="stylesheet" href="../css/catalogo.css?v=<?= filemtime(__DIR__ . '/../css/catalogo.css') ?>"><link rel="stylesheet" href="../css/pedidos.css?v=<?= filemtime(__DIR__ . '/../css/pedidos.css') ?>"></head>
 <body><main class="catalog-page clean-workspace">
 <a class="back-link" href="../menu.php">Volver al menú</a>
-<header class="catalog-header"><div><span class="eyebrow">FLORERÍA / ENCARGOS</span><h1>Pedidos por encargo<span class="title-dot">.</span></h1><p><?= $user['rol']==='Administrador'?'Consulta todos los pedidos.':'Consulta los pedidos que registraste.' ?></p></div></header>
+<header class="catalog-header orders-header"><div><span class="eyebrow">FLORERÍA / ENCARGOS</span><h1>Pedidos por encargo<span class="title-dot">.</span></h1><p><?= $user['rol']==='Administrador'?'Consulta todos los pedidos.':'Consulta los pedidos que registraste.' ?></p></div>
+<a class="action" href="<?= $showAgenda?'pedidos.php':'pedidos.php?vista=agenda' ?>"><?= $showAgenda?'Nuevo pedido':'Agenda de entregas' ?></a>
+</header>
 <?php if ($message): ?><p class="notice notice-success" role="status"><?= esc($message) ?></p><?php endif; ?>
 <?php if ($error): ?><p class="notice notice-error" role="alert"><?= esc($error) ?></p><?php endif; ?>
-<section class="user-card catalog-list"><div class="list-heading"><h2>Nuevo pedido</h2></div>
-<form method="post" class="product-form">
-<input type="hidden" name="csrf" value="<?= esc($_SESSION['csrf']) ?>"><input type="hidden" name="accion" value="crear"><input type="hidden" name="operacion_id" value="<?= esc($values['operacion_id']) ?>">
-<div class="form-grid">
-<div class="field"><label for="cliente">Cliente</label><input id="cliente" name="cliente" maxlength="100" autocomplete="name" value="<?= esc($values['cliente']) ?>" required></div>
-<div class="field"><label for="telefono">Teléfono</label><input id="telefono" name="telefono" type="tel" maxlength="30" autocomplete="tel" value="<?= esc($values['telefono']) ?>" required></div>
-<div class="field"><label for="articulo_id">Arreglo</label><select id="articulo_id" name="articulo_id" required><option value="">Selecciona un arreglo</option><?php foreach ($products as $product): ?><option value="<?= (int)$product['id_articulo'] ?>" <?= (string)$product['id_articulo']===$values['articulo_id']?'selected':'' ?>><?= esc($product['nombre'].' · '.moneyAmount($product['precio']).' MXN por unidad') ?></option><?php endforeach; ?></select></div>
-<div class="field"><label for="cantidad">Cantidad de arreglos</label><input id="cantidad" name="cantidad" type="number" min="1" max="2147483647" step="1" value="<?= esc($values['cantidad']) ?>" required></div>
-<div class="field"><label for="fecha_entrega">Fecha y hora de entrega</label><input id="fecha_entrega" name="fecha_entrega" type="datetime-local" value="<?= esc($values['fecha_entrega']) ?>" required><small>Hora de Ciudad de México.</small></div>
-</div>
-<p class="field-note">Preparar registra la venta y descuenta materiales una sola vez. No vuelvas a registrar este encargo desde Ventas.</p><details class="screen-help"><summary>Precio y existencias</summary><p>Se conserva el precio al registrar el pedido. Los materiales no se reservan; se comprueban al iniciar la preparación.</p></details>
-<div class="form-actions"><button <?= !$products?'disabled':'' ?>>Registrar pedido pendiente</button></div>
-<?php if (!$products): ?><p>No hay arreglos para encargos. Configúralos desde Productos y existencias.</p><?php endif; ?>
-</form></section>
-<section class="user-card catalog-list"><div class="list-heading"><h2>Agenda de entregas</h2></div>
-<form method="get" class="search"><label for="estado">Estado del pedido</label><div><select id="estado" name="estado"><option value="">Todos los estados</option><?php foreach (orderStates() as $state): ?><option <?= $state===$filter?'selected':'' ?>><?= esc($state) ?></option><?php endforeach; ?></select><button>Filtrar</button></div></form>
+<?php if ($showAgenda): ?>
+<section class="user-card catalog-list" aria-labelledby="delivery-agenda-title">
+<div class="list-heading"><h2 id="delivery-agenda-title">Agenda de entregas</h2></div>
+<form method="get" class="search"><input type="hidden" name="vista" value="agenda"><label for="estado">Estado del pedido</label><div><select id="estado" name="estado"><option value="">Todos los estados</option><?php foreach (orderStates() as $state): ?><option <?= $state===$filter?'selected':'' ?>><?= esc($state) ?></option><?php endforeach; ?></select><button>Filtrar</button></div></form>
 <div class="table-wrap"><table><thead><tr><th>Pedido / cliente</th><th>Arreglo</th><th>Entrega · CDMX</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
 <?php foreach ($orders as $order): ?>
 <tr><td><strong>#<?= (int)$order['id'] ?> · <?= esc($order['cliente']) ?></strong><small><?= esc($order['telefono']) ?></small><small>Registró: <?= esc($order['username']??'Usuario anterior') ?></small></td>
@@ -78,4 +73,21 @@ foreach ($actions as $target=>$label): ?>
 <?php if (!$orders): ?><tr><td colspan="5">No hay pedidos para esta consulta.</td></tr><?php endif; ?>
 </tbody></table></div>
 <details class="screen-help orders-help"><summary>Entregas y cancelaciones</summary><p>Listo y Entregado no descuentan existencias. Para cancelar después de iniciar la preparación, el Administrador debe corregir toda la venta desde Registros y después cerrar el pedido. El cierre no devuelve materiales por sí mismo.</p></details>
-</section></main></body></html>
+</section>
+<?php else: ?>
+<section class="user-card catalog-list"><div class="list-heading"><h2>Nuevo pedido</h2></div>
+<form method="post" class="product-form">
+<input type="hidden" name="csrf" value="<?= esc($_SESSION['csrf']) ?>"><input type="hidden" name="accion" value="crear"><input type="hidden" name="operacion_id" value="<?= esc($values['operacion_id']) ?>">
+<div class="form-grid">
+<div class="field"><label for="cliente">Cliente</label><input id="cliente" name="cliente" maxlength="100" autocomplete="name" value="<?= esc($values['cliente']) ?>" required></div>
+<div class="field"><label for="telefono">Teléfono</label><input id="telefono" name="telefono" type="tel" maxlength="30" autocomplete="tel" value="<?= esc($values['telefono']) ?>" required></div>
+<div class="field"><label for="articulo_id">Arreglo</label><select id="articulo_id" name="articulo_id" required><option value="">Selecciona un arreglo</option><?php foreach ($products as $product): ?><option value="<?= (int)$product['id_articulo'] ?>" <?= (string)$product['id_articulo']===$values['articulo_id']?'selected':'' ?>><?= esc($product['nombre'].' · '.moneyAmount($product['precio']).' MXN por unidad') ?></option><?php endforeach; ?></select></div>
+<div class="field"><label for="cantidad">Cantidad de arreglos</label><input id="cantidad" name="cantidad" type="number" min="1" max="2147483647" step="1" value="<?= esc($values['cantidad']) ?>" required></div>
+<div class="field"><label for="fecha_entrega">Fecha y hora de entrega</label><input id="fecha_entrega" name="fecha_entrega" type="datetime-local" value="<?= esc($values['fecha_entrega']) ?>" required><small>Hora de Ciudad de México.</small></div>
+</div>
+<p class="field-note">Preparar registra la venta y descuenta materiales una sola vez. No vuelvas a registrar este encargo desde Ventas.</p><details class="screen-help"><summary>Precio y existencias</summary><p>Se conserva el precio al registrar el pedido. Los materiales no se reservan; se comprueban al iniciar la preparación.</p></details>
+<div class="form-actions"><button <?= !$products?'disabled':'' ?>>Registrar pedido pendiente</button></div>
+<?php if (!$products): ?><p>No hay arreglos para encargos. Configúralos desde Productos y existencias.</p><?php endif; ?>
+</form></section>
+<?php endif; ?>
+</main></body></html>

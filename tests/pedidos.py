@@ -14,6 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 COMPOSE = ['docker', 'compose', '-f', '/workspace/inventarios-env/compose.yaml']
 BASE = 'http://127.0.0.1:8080/'
 PAGE = 'Pedidos/pedidos.php'
+AGENDA = PAGE + '?vista=agenda'
 
 def sql(query):
     return subprocess.check_output(COMPOSE + ['exec', '-T', 'db', 'mysql', '-uroot', 'punto_de_venta', '-N', '-e', query], text=True).strip()
@@ -92,11 +93,12 @@ try:
     assert new_order(cashier, 'bad')[2][0] == 403
     oid, creation, result = new_order(cashier, cash_csrf)
     assert result[0] == 200 and stock(flower) == 20 and stock(base) == 1
-    assert '&lt;encargo&gt;' in result[1] and 'Cliente <encargo>' not in result[1]
+    agenda = call(cashier, AGENDA)[1]
+    assert '&lt;encargo&gt;' in agenda and 'Cliente <encargo>' not in agenda
     assert call(cashier, PAGE, creation)[0] == 200
     assert sql("SELECT COUNT(*) FROM pedidos WHERE operacion_id='"+creation['operacion_id']+"'") == '1'
     assert call(cashier, PAGE, dict(creation, cantidad='3'))[0] == 422
-    assert 'Cliente &lt;encargo&gt;' not in call(outsider, PAGE)[1]
+    assert 'Cliente &lt;encargo&gt;' not in call(outsider, AGENDA)[1]
     assert transition(outsider, out_csrf, oid, 'Cancelado')[0][0] == 422
     assert transition(cashier, cash_csrf, oid, 'En preparación')[0][0] == 422
     assert transition(admin, csrf, oid, 'Entregado')[0][0] == 422

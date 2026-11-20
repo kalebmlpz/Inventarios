@@ -9,3 +9,5 @@
 .catalog-page th:first-child { width: 190px; }
 .catalog-page th:nth-child(2) { width: 190px; }
 .catalog-page th:nth-child(3) { width: 150px; }
+
+.orders-header { flex-wrap: wrap; }
