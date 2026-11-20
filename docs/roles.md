@@ -146,8 +146,17 @@ En el menú, **Pedidos por encargo** abre la agenda y el formulario. Administrad
 - **Entregado:** Administrador o Cajero responsable confirma la entrega de un pedido Listo. No vuelve a cobrar ni descontar componentes.
 - **Cancelado:** termina un pedido pendiente. Si ya comenzó la preparación, el Administrador debe corregir primero la cantidad completa de su venta desde **Revisar / corregir venta** y después pulsar **Cerrar pedido corregido**. La corrección exige elegir el tratamiento real de la mercancía: no se devuelven materiales automáticamente. El cierre no añade otro reintegro. Una corrección parcial bloquea Listo/Entregado hasta revisar y completar la corrección; no se entregan cantidades distintas silenciosamente.
 
-No registres de nuevo en Ventas un encargo creado desde esta agenda. La venta vinculada y sus movimientos aparecen en Registros y Reportes. Los registros anteriores no se convierten automáticamente en pedidos. El flujo no gestiona anticipos, cobros pendientes, reservas de stock ni edición de pedidos: si un pendiente tiene datos incorrectos, cancélalo y registra otro.
+No registres de nuevo en Ventas un encargo creado desde esta agenda. La venta vinculada y sus movimientos aparecen en Registros y Reportes. Los registros anteriores no se convierten automáticamente en pedidos. La agenda y los ajustes de pedidos pendientes se describen en la sección siguiente.
 
 Los estados avanzan en orden y los terminales no se reabren. Se guardan eventos de estado con responsable y hora. Las solicitudes llevan CSRF, versión del pedido y una clave de operación; el bloqueo transaccional del inventario evita descontar dos veces ante reenvíos, doble clic o preparación simultánea, incluso entre dos pedidos que necesitan los últimos materiales.
 
 Validación: `python3 tests/pedidos.py` usa la infraestructura de desarrollo de las pruebas existentes. Cubre datos inválidos, permisos, privacidad, HTML escapado, CSRF, cancelación, estados fuera de orden, precio acordado, reversión completa por falta de stock, reenvíos exactos y modificados, correcciones de venta y carreras con procesos PHP independientes. Usa datos temporales y los elimina al terminar; no ejecutarlo contra producción.
+
+## Agenda, edición y anticipos
+
+Para una base existente, aplica `App/migrations/010_agenda_anticipos.sql` una vez después de la 009, con respaldo previo. Una instalación nueva usa el volcado completo actualizado.
+
+- En **Agenda de entregas**, combina **Hoy**, **Mañana** o **Atrasadas** con el filtro de estado. Las fechas y horas corresponden a Ciudad de México. Atrasadas incluye pedidos que ya pasaron su hora y siguen pendientes, en preparación o listos.
+- En **Editar pedido y pagos**, cambia la cantidad o la fecha de entrega de un pedido pendiente. Se conserva el precio acordado por arreglo. La edición no reserva ni descuenta inventario. El sistema impide bajar el total por debajo de los pagos registrados.
+- Desde el detalle registra cada importe recibido. El saldo se calcula en MXN como el total acordado menos la suma de los pagos. Un reenvío de la misma solicitud no duplica el pago. La agenda muestra el importe pagado y el saldo.
+- Registrar un pago guarda un importe ya recibido, con fecha y responsable. La venta y el consumo de materiales se siguen registrando al preparar el pedido. Un pedido cancelado o con venta corregida conserva el historial de pagos y deja de admitir nuevos cobros. Cualquier devolución de dinero se gestiona por separado.

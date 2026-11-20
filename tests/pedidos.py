@@ -10,6 +10,8 @@ import urllib.parse
 import urllib.request
 import uuid
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 COMPOSE = ['docker', 'compose', '-f', '/workspace/inventarios-env/compose.yaml']
 BASE = 'http://127.0.0.1:8080/'
@@ -155,7 +157,50 @@ try:
     with ThreadPoolExecutor(2) as pool:
         results = list(pool.map(lambda x:race(x,'En preparación',0), [third,fourth]))
     assert sorted(results) == ['OK','REJECTED'] and stock(flower) == 0, results
-    print('PASS: pedidos, validación, privacidad, CSRF, estados, precio acordado, consumo único, rollback, reenvíos, correcciones y concurrencia entre pedidos')
+    # Agenda por día, edición de pendientes y registro exacto de pagos.
+    now = datetime.now(ZoneInfo('America/Mexico_City'))
+    tomorrow = (now + timedelta(days=1)).replace(hour=12, minute=30)
+    sql('UPDATE articulo SET precio=12.34 WHERE id_articulo='+str(arrangement))
+    managed, _, _ = new_order(cashier, cash_csrf)
+    sql('UPDATE articulo SET precio=99 WHERE id_articulo='+str(arrangement))
+    detail = 'Pedidos/gestionar.php?id=' + managed
+    row = f'gestionar.php?id={managed}"'
+    assert call(outsider, detail)[0] == 404
+    assert row not in call(cashier, AGENDA+'&entrega=hoy')[1]
+    payment = dict(accion='pago', csrf=cash_csrf, version=0, importe='13.00', operacion_id=uuid.uuid4().hex)
+    assert call(cashier, detail, dict(payment, csrf='bad'))[0] == 403
+    assert call(cashier, detail, dict(payment, importe='24.69'))[0] == 422
+    status, body = call(cashier, detail, payment)
+    assert status == 200 and 'Pago registrado' in body and '$11.68' in body
+    assert call(cashier, detail, payment)[0] == 200
+    assert call(cashier, detail, dict(payment, importe='13.01'))[0] == 422
+    assert sql('SELECT COUNT(*) FROM pedidos_pagos WHERE pedido_id='+managed) == '1'
+    edit = dict(accion='editar', csrf=cash_csrf, version=1, cantidad=3,
+                fecha_entrega=tomorrow.strftime('%Y-%m-%dT%H:%M'), operacion_id=uuid.uuid4().hex)
+    assert call(cashier, detail, dict(edit, cantidad=1))[0] == 422  # $13.00 ya recibidos
+    assert call(cashier, detail, dict(edit, version=0))[0] == 422
+    assert call(cashier, detail, edit)[0] == 200
+    assert call(cashier, detail, edit)[0] == 200
+    assert sql('SELECT cantidad,precio_unitario,version FROM pedidos WHERE id='+managed) == '3\t12.34\t2'
+    assert row in call(cashier, AGENDA+'&entrega=manana&estado=Pendiente')[1]
+    assert row not in call(cashier, AGENDA+'&entrega=manana&estado=Listo')[1]
+    balance = dict(payment, version=2, importe='24.02', operacion_id=uuid.uuid4().hex)
+    assert call(cashier, detail, balance)[0] == 200
+    assert call(cashier, detail, dict(balance, version=3, importe='0.01', operacion_id=uuid.uuid4().hex))[0] == 422
+    assert sql('SELECT SUM(importe) FROM pedidos_pagos WHERE pedido_id='+managed) == '37.02'
+    assert sql('SELECT venta_id FROM pedidos WHERE id='+managed) == 'NULL'
+    assert stock(flower) == 0
+    sql("UPDATE pedidos SET fecha_entrega='"+(now-timedelta(minutes=10)).strftime('%Y-%m-%d %H:%M:%S')+"' WHERE id="+managed)
+    assert row in call(cashier, AGENDA+'&entrega=atrasadas')[1]
+    sql("UPDATE pedidos SET fecha_entrega='"+now.strftime('%Y-%m-%d %H:%M:%S')+"' WHERE id="+managed)
+    assert row in call(cashier, AGENDA+'&entrega=hoy')[1]
+    sql("UPDATE pedidos SET fecha_entrega='"+(now-timedelta(minutes=10)).strftime('%Y-%m-%d %H:%M:%S')+"' WHERE id="+managed)
+    assert transition(cashier, cash_csrf, managed, 'Cancelado')[0][0] == 200
+    assert row not in call(cashier, AGENDA+'&entrega=atrasadas')[1]
+    assert call(cashier, detail, dict(edit, version=4, operacion_id=uuid.uuid4().hex))[0] == 422
+    assert call(cashier, detail, dict(payment, version=4, operacion_id=uuid.uuid4().hex))[0] == 422
+    assert '$37.02' in call(cashier, detail)[1]
+    print('PASS: pedidos, validación, privacidad, CSRF, agenda, edición, pagos, estados, precio acordado, consumo único, rollback, reenvíos, correcciones y concurrencia entre pedidos')
 finally:
     if orders:
         ids = ','.join(orders)

@@ -14,6 +14,11 @@ function orderNumber($value) {
 function orderAccess($order,$user) {
     if ($user['rol']!=='Administrador' && (int)$order['usuario_id']!==(int)$user['id']) throw new DomainException('Pedido no disponible.');
 }
+function orderDelivery($delivery) {
+    $parsed=is_string($delivery) && preg_match('/\A[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}\z/',$delivery) ? DateTimeImmutable::createFromFormat('!Y-m-d\TH:i',$delivery) : false;
+    if (!$parsed || $parsed->format('Y-m-d\TH:i')!==$delivery) throw new DomainException('Revisa la fecha y hora de entrega.');
+    return $parsed;
+}
 function createOrder($conn,$user,$input) {
     $token=orderToken($input);
     $customer=is_string($input['cliente']??null)?trim($input['cliente']):'';
@@ -22,8 +27,7 @@ function createOrder($conn,$user,$input) {
     if (!preg_match('/^[+0-9() .-]{7,30}$/',$phone) || strlen(preg_replace('/\D/','',$phone))<7) throw new DomainException('Escribe un teléfono válido de 7 a 30 caracteres.');
     $productId=orderNumber($input['articulo_id']??null); $quantity=orderNumber($input['cantidad']??null);
     $delivery=$input['fecha_entrega']??null;
-    $parsed=is_string($delivery) && preg_match('/\A[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}\z/',$delivery) ? DateTimeImmutable::createFromFormat('!Y-m-d\TH:i',$delivery) : false;
-    if (!$parsed || $parsed->format('Y-m-d\TH:i')!==$delivery) throw new DomainException('Revisa la fecha y hora de entrega.');
+    $parsed=orderDelivery($delivery);
     $hash=hash('sha256',json_encode([$customer,$phone,$productId,$quantity,$delivery]));
     try {
         inventoryLock($conn);
@@ -86,4 +90,92 @@ function transitionOrder($conn,$user,$input) {
         $stmt=$conn->prepare('INSERT INTO pedidos_eventos(pedido_id,usuario_id,estado,creado_en,operacion_id,solicitud_hash) VALUES(?,?,?,?,?,?)');$stmt->execute([$id,$user['id'],$target,$now,$token,$hash]);
         $conn->commit();
     } catch (Throwable $e) { if ($conn->inTransaction()) $conn->rollBack(); throw $e; }
+}
+
+function orderPaymentTotalSql() {
+    return '(SELECT COALESCE(SUM(importe),0) FROM pedidos_pagos WHERE pedido_id=p.id)';
+}
+
+function orderCanReceivePayment($order) {
+    return $order['estado']!=='Cancelado' && !(int)$order['corregidas'];
+}
+
+function updateOrderDetails($conn,$user,$id,$input) {
+    $token=orderToken($input);
+    $action=$input['accion']??null;
+    $editing=$action==='editar';
+    if (!$editing && $action!=='pago') throw new DomainException('Acción no permitida.');
+    $version=filter_var($input['version']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>0]]);
+    if ($version===false) throw new DomainException('Recarga el pedido antes de continuar.');
+    $amount='0.00';
+    if ($editing) {
+        $quantity=orderNumber($input['cantidad']??null);
+        $delivery=orderDelivery($input['fecha_entrega']??null);
+        $hash=hash('sha256',json_encode(['editar',$id,$version,$quantity,$delivery->format('Y-m-d H:i:s')]));
+    } else {
+        $raw=$input['importe']??null;
+        if (!is_string($raw) || !preg_match('/\A(\d{1,18})(?:\.(\d{1,2}))?\z/',$raw,$parts)) {
+            throw new DomainException('Escribe un importe con hasta dos decimales.');
+        }
+        $amount=(ltrim($parts[1],'0') ?: '0').'.'.str_pad($parts[2]??'',2,'0');
+        if ($amount==='0.00') throw new DomainException('El pago debe ser mayor que cero.');
+    }
+
+    try {
+        inventoryLock($conn);
+        $order=loadOrderDetails($conn,$id);
+        orderAccess($order,$user);
+        $table=$editing?'pedidos_eventos':'pedidos_pagos';
+        $stmt=$conn->prepare("SELECT * FROM $table WHERE operacion_id=?");
+        $stmt->execute([$token]);
+        $receipt=$stmt->fetch(PDO::FETCH_ASSOC);
+        if ($receipt) {
+            $sameRequest=$editing ? hash_equals($receipt['solicitud_hash'],$hash) : $receipt['importe']===$amount;
+            if ((int)$receipt['pedido_id']!==$id || (int)$receipt['usuario_id']!==(int)$user['id'] || !$sameRequest) {
+                throw new DomainException('Esta solicitud ya se utilizó con otros datos.');
+            }
+            $conn->commit();
+            return;
+        }
+        if ((int)$order['version']!==$version) throw new DomainException('El pedido cambió. Recarga antes de continuar.');
+        if ($editing && $order['estado']!=='Pendiente') throw new DomainException('Solo se pueden editar pedidos pendientes.');
+        if (!$editing && !orderCanReceivePayment($order)) throw new DomainException('Este pedido no admite pagos.');
+        if ($editing && $delivery->format('Y-m-d H:i:s')!==$order['fecha_entrega'] && $delivery<=new DateTimeImmutable('now')) {
+            throw new DomainException('La nueva fecha de entrega debe ser futura.');
+        }
+        $paid=orderPaymentTotalSql();
+        $stmt=$conn->prepare("SELECT precio_unitario * CAST(? AS SIGNED) >= $paid + CAST(? AS DECIMAL(20,2)) FROM pedidos p WHERE p.id=?");
+        $stmt->execute([$quantity??$order['cantidad'],$amount,$id]);
+        if (!(int)$stmt->fetchColumn()) {
+            throw new DomainException($editing?'El nuevo total es menor que los pagos registrados.':'El pago supera el saldo pendiente.');
+        }
+        $now=date('Y-m-d H:i:s');
+        if ($editing) {
+            $stmt=$conn->prepare('UPDATE pedidos SET cantidad=?,fecha_entrega=?,version=version+1,actualizado_en=? WHERE id=?');
+            $stmt->execute([$quantity,$delivery->format('Y-m-d H:i:s'),$now,$id]);
+            $stmt=$conn->prepare("INSERT INTO pedidos_eventos(pedido_id,usuario_id,estado,creado_en,operacion_id,solicitud_hash) VALUES(?,?,'Pendiente',?,?,?)");
+            $stmt->execute([$id,$user['id'],$now,$token,$hash]);
+        } else {
+            $stmt=$conn->prepare('INSERT INTO pedidos_pagos(pedido_id,usuario_id,importe,creado_en,operacion_id) VALUES(?,?,?,?,?)');
+            $stmt->execute([$id,$user['id'],$amount,$now,$token]);
+            $stmt=$conn->prepare('UPDATE pedidos SET version=version+1,actualizado_en=? WHERE id=?');
+            $stmt->execute([$now,$id]);
+        }
+        $conn->commit();
+    } catch (Throwable $e) {
+        if ($conn->inTransaction()) $conn->rollBack();
+        throw $e;
+    }
+}
+
+function loadOrderDetails($conn,$id) {
+    $paid=orderPaymentTotalSql();
+    $stmt=$conn->prepare("SELECT p.*, CAST(p.precio_unitario*p.cantidad AS DECIMAL(20,2)) AS importe,
+        $paid AS pagado, CAST(p.precio_unitario*p.cantidad-$paid AS DECIMAL(20,2)) AS saldo,
+        (SELECT COUNT(*) FROM registros WHERE venta_origen_id=p.venta_id) AS corregidas
+        FROM pedidos p WHERE p.id=?");
+    $stmt->execute([$id]);
+    $order=$stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$order) throw new DomainException('Pedido no disponible.');
+    return $order;
 }

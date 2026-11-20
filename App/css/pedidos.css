@@ -11,3 +11,12 @@
 .catalog-page th:nth-child(3) { width: 150px; }
 
 .orders-header { flex-wrap: wrap; }
+
+.order-periods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 16px 24px 0;
+}
+.order-periods a[aria-current="page"] { background: #1a1a1a; color: #fff; }
+.order-payment-list { margin: 0 24px 24px; padding-left: 20px; }

@@ -25,12 +25,30 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
 }
 $message=$_SESSION['pedido_message']??'';unset($_SESSION['pedido_message']);
 if ($showAgenda) {
+    $periods=['todas'=>'Todas','hoy'=>'Hoy','manana'=>'Mañana','atrasadas'=>'Atrasadas'];
+    $period=$_GET['entrega']??'todas';
+    if (!is_string($period) || !isset($periods[$period])) {
+        http_response_code(400);
+        $error='Filtro de entrega no válido.';
+        $period='todas';
+    }
+    $today=new DateTimeImmutable('today');
     $filter=is_string($_GET['estado']??null)?$_GET['estado']:'';
     if ($filter!=='' && !in_array($filter,orderStates(),true)) { http_response_code(400);$error='Filtro de estado no válido.';$filter=''; }
     $where=[];$params=[];
     if ($user['rol']!=='Administrador') { $where[]='p.usuario_id=?';$params[]=$user['id']; }
     if ($filter!=='') { $where[]='p.estado=?';$params[]=$filter; }
-    $stmt=$conn->prepare('SELECT p.*,CAST(p.precio_unitario*p.cantidad AS DECIMAL(20,2)) AS importe,u.username, (SELECT COALESCE(SUM(r.cantidad),0) FROM registros r WHERE r.venta_origen_id=p.venta_id AND r.tipo IN (\'Cancelación\',\'Devolución\')) AS corregidas FROM pedidos p LEFT JOIN usuarios u ON u.id=p.usuario_id'.($where?' WHERE '.implode(' AND ',$where):'').' ORDER BY p.fecha_entrega,p.id');
+    if ($period==='hoy' || $period==='manana') {
+        $day=$period==='hoy'?$today:$today->modify('+1 day');
+        $where[]='p.fecha_entrega>=? AND p.fecha_entrega<?';
+        $params[]=$day->format('Y-m-d H:i:s');
+        $params[]=$day->modify('+1 day')->format('Y-m-d H:i:s');
+    } elseif ($period==='atrasadas') {
+        $where[]="p.fecha_entrega<? AND p.estado NOT IN ('Entregado','Cancelado')";
+        $params[]=date('Y-m-d H:i:s');
+    }
+    $paid=orderPaymentTotalSql();
+    $stmt=$conn->prepare('SELECT p.*,CAST(p.precio_unitario*p.cantidad AS DECIMAL(20,2)) AS importe,'.$paid.' AS pagado,CAST(p.precio_unitario*p.cantidad-'.$paid.' AS DECIMAL(20,2)) AS saldo,u.username, (SELECT COALESCE(SUM(r.cantidad),0) FROM registros r WHERE r.venta_origen_id=p.venta_id AND r.tipo IN (\'Cancelación\',\'Devolución\')) AS corregidas FROM pedidos p LEFT JOIN usuarios u ON u.id=p.usuario_id'.($where?' WHERE '.implode(' AND ',$where):'').' ORDER BY p.fecha_entrega,p.id');
     $stmt->execute($params);$orders=$stmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
     $products=$conn->query("SELECT id_articulo,nombre,precio FROM articulo WHERE categoria='Arreglos' AND modalidad IN ('Por encargo','Ambas') ORDER BY nombre")->fetchAll(PDO::FETCH_ASSOC);
@@ -53,14 +71,22 @@ if ($showAgenda) {
 <?php if ($showAgenda): ?>
 <section class="user-card catalog-list" aria-labelledby="delivery-agenda-title">
 <div class="list-heading"><h2 id="delivery-agenda-title">Agenda de entregas</h2></div>
-<form method="get" class="search"><input type="hidden" name="vista" value="agenda"><label for="estado">Estado del pedido</label><div><select id="estado" name="estado"><option value="">Todos los estados</option><?php foreach (orderStates() as $state): ?><option <?= $state===$filter?'selected':'' ?>><?= esc($state) ?></option><?php endforeach; ?></select><button>Filtrar</button></div></form>
+<nav class="order-periods" aria-label="Fecha de entrega">
+<?php foreach ($periods as $key=>$label): ?>
+<a class="edit-link" href="?<?= esc(http_build_query(['vista'=>'agenda','entrega'=>$key,'estado'=>$filter])) ?>" <?= $key===$period?'aria-current="page"':'' ?>><?= esc($label) ?></a>
+<?php endforeach; ?>
+</nav>
+<form method="get" class="search"><input type="hidden" name="vista" value="agenda"><input type="hidden" name="entrega" value="<?= esc($period) ?>"><label for="estado">Estado del pedido</label><div><select id="estado" name="estado"><option value="">Todos los estados</option><?php foreach (orderStates() as $state): ?><option <?= $state===$filter?'selected':'' ?>><?= esc($state) ?></option><?php endforeach; ?></select><button>Filtrar</button></div></form>
 <div class="table-wrap"><table><thead><tr><th>Pedido / cliente</th><th>Arreglo</th><th>Entrega · CDMX</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
 <?php foreach ($orders as $order): ?>
 <tr><td><strong>#<?= (int)$order['id'] ?> · <?= esc($order['cliente']) ?></strong><small><?= esc($order['telefono']) ?></small><small>Registró: <?= esc($order['username']??'Usuario anterior') ?></small></td>
-<td><?= esc($order['nombre_snapshot']) ?><small><?= (int)$order['cantidad'] ?> arreglo(s) · <?= esc(moneyAmount($order['precio_unitario'])) ?> MXN c/u</small><small>Total acordado: <?= esc(moneyAmount($order['importe'])) ?> MXN</small></td>
-<td><?= esc(date('d/m/Y H:i',strtotime($order['fecha_entrega']))) ?></td>
+<td><?= esc($order['nombre_snapshot']) ?><small><?= (int)$order['cantidad'] ?> arreglo(s) · <?= esc(moneyAmount($order['precio_unitario'])) ?> MXN c/u</small><small>Total acordado: <?= esc(moneyAmount($order['importe'])) ?> MXN</small>
+<small>Pagado: <?= esc(moneyAmount($order['pagado'])) ?> MXN</small>
+<?php if (orderCanReceivePayment($order)): ?><small>Saldo: <?= esc(moneyAmount($order['saldo'])) ?> MXN</small><?php endif; ?></td>
+<td><strong><?= esc(date('H:i',strtotime($order['fecha_entrega']))) ?></strong><small><?= esc(date('d/m/Y',strtotime($order['fecha_entrega']))) ?></small></td>
 <td><span class="order-state"><?= esc($order['estado']) ?></span><?php if ($order['venta_id']): ?><small>Venta #<?= (int)$order['venta_id'] ?> · existencias ya descontadas</small><?php endif; ?><?php if ($order['corregidas']): ?><small>Unidades corregidas: <?= (int)$order['corregidas'] ?></small><?php endif; ?></td>
 <td><div class="order-actions">
+<a class="edit-link" href="gestionar.php?id=<?= (int)$order['id'] ?>"><?= $order['estado']==='Pendiente'?'Editar pedido y pagos':'Ver pedido y pagos' ?></a>
 <?php
 $actions=[];
 if ($order['estado']==='Pendiente') {
@@ -73,7 +99,6 @@ foreach ($actions as $target=>$label): ?>
 <form method="post"><input type="hidden" name="csrf" value="<?= esc($_SESSION['csrf']) ?>"><input type="hidden" name="accion" value="estado"><input type="hidden" name="pedido_id" value="<?= (int)$order['id'] ?>"><input type="hidden" name="version" value="<?= (int)$order['version'] ?>"><input type="hidden" name="operacion_id" value="<?= esc(operationToken()) ?>"><input type="hidden" name="estado" value="<?= esc($target) ?>"><button><?= esc($label) ?></button></form>
 <?php endforeach; ?>
 <?php if ($order['venta_id'] && $user['rol']==='Administrador'): ?><a class="edit-link" href="../Registros/devolucion.php?id=<?= (int)$order['venta_id'] ?>">Revisar / corregir venta</a><?php endif; ?>
-<?php if (!$actions && !$order['venta_id']): ?><small>Sin acciones pendientes.</small><?php endif; ?>
 </div></td></tr>
 <?php endforeach; ?>
 <?php if (!$orders): ?><tr><td colspan="5">No hay pedidos para esta consulta.</td></tr><?php endif; ?>
